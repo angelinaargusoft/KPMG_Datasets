@@ -1,0 +1,61 @@
+const DatasetService = require("./datasetService");
+async function createDataset(req, res, next) {
+  try {
+    console.log(req.body);
+    const dataset = await DatasetService.createDataset(req.body);
+    res.status(201).json({ message: "Dataset created", dataset });
+  } catch (err) {
+    next(err);
+  }
+}
+async function getAllDatasets(req, res, next) {
+  try {
+    const datasets = await DatasetService.getAllDatasets();
+    res.json(datasets);
+  } catch (err) {
+    next(err);
+  }
+}
+async function getDatasetById(req, res, next) {
+  try {
+    const dataset = await DatasetService.getDatasetById(req.params.id);
+    if (!dataset) return res.status(404).json({ message: "Dataset not found" });
+    res.json(dataset);
+  } catch (err) {
+    next(err);
+  }
+}
+async function getDatasetByUUID(req, res, next) {
+  try {
+    const dataset = await DatasetService.getDatasetByUUID(req.params.uuid);
+    if (!dataset) return res.status(404).json({ message: "Dataset not found" });
+    res.json(dataset);
+  } catch (err) {
+    next(err);
+  }
+}
+async function updateDataset(req, res, next) {
+  try {
+    const updated = await DatasetService.updateDataset(req.params.id, req.body);
+    console.log(updated);
+    res.json({ message: "Dataset updated", updated });
+  } catch (err) {
+    next(err);
+  }
+}
+async function deleteDataset(req, res, next) {
+  try {
+    await DatasetService.deleteDataset(req.params.id);
+    res.json({ message: "Dataset deleted" });
+  } catch (err) {
+    next(err);
+  }
+}
+module.exports = {
+  createDataset,
+  getAllDatasets,
+  getDatasetById,
+  getDatasetByUUID,
+  updateDataset,
+  deleteDataset,
+};
