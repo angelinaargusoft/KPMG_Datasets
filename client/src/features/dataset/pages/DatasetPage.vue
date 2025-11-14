@@ -1,9 +1,13 @@
 <template>
-  <v-container class=" dataset-container py-8" theme="light" fluid>
+  <v-container class="dataset-container py-8" theme="light" fluid>
     <!-- Header -->
     <div class="d-flex justify-space-between align-center mb-6">
       <h2 class="text-h5 font-weight-bold">Datasets</h2>
-      <v-btn color="primary" prepend-icon="mdi-database-plus" @click="$router.push('/admin/datasets/add')">
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-database-plus"
+        @click="$router.push('/admin/datasets/add')"
+      >
         Add Dataset
       </v-btn>
     </div>
@@ -20,42 +24,49 @@
         />
       </v-col>
     </v-row>
-    <!-- Dataset Table -->
-    <v-card outlined class="pa-0 elevation-1 dataset-table">
-      <!-- Table Header -->
-      <v-row class="font-weight-medium py-3 px-4 bg-light" no-gutters>
-        <v-col cols="2">Name</v-col>
-        <v-col cols="3">Description</v-col>
-        <v-col cols="1">Created At</v-col>
-        <v-col cols="2">Created By</v-col>
-        <v-col cols="1">Storage</v-col>
-        <v-col cols="1">Data Import</v-col>
-        <v-col cols="2" class="text-right">Actions</v-col>
-      </v-row>
-      <!-- Dataset Rows -->
-      <DatasetRow
-        v-for="dataset in filteredDatasets"
-        :key="dataset.id"
-        :dataset="dataset"
-        @view="handleView"
-      />
-      <!-- Empty State -->
-      <div v-if="!filteredDatasets.length" class="text-center py-8 text-grey">
-        No matching datasets found.
-      </div>
-    </v-card>
+    <!-- REUSABLE TABLE -->
+    <BaseTable
+      :columns="columns"
+      :data="filteredDatasets"
+      :loading="loading"
+      show-actions
+      empty-text="No matching datasets found."
+    >
+      <template #rows>
+        <DatasetRow
+          v-for="dataset in filteredDatasets"
+          :key="dataset.id"
+          :dataset="dataset"
+          @view="handleView"
+        />
+      </template>
+    </BaseTable>
   </v-container>
 </template>
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import DatasetRow from "../components/DatasetRow.vue";
+import BaseTable from "@/components/common/BaseTable.vue";
 const store = useStore();
 const searchQuery = ref("");
+const loading = ref(false);
 // Fetch datasets
 onMounted(async () => {
+  loading.value = true;
   await store.dispatch("dataset/fetchDatasets");
+  loading.value = false;
 });
+// Table column definitions
+const columns = [
+  { label: "Name", key: "name", cols: 2 },
+  { label: "Description", key: "description", cols: 3 },
+  { label: "Created At", key: "createdAt", cols: 1 },
+  { label: "Created By", key: "createdBy", cols: 2 },
+  { label: "Storage", key: "storage", cols: 1 },
+  { label: "Data Import", key: "import", cols: 1 },
+];
+// Dataset data
 const datasets = computed(() => store.getters["dataset/datasets"] || []);
 const filteredDatasets = computed(() => {
   if (!searchQuery.value) return datasets.value;
@@ -64,35 +75,13 @@ const filteredDatasets = computed(() => {
     Object.values(d).join(" ").toLowerCase().includes(q)
   );
 });
-
 function handleView(dataset) {
   alert(`Viewing dataset: ${dataset.name}`);
 }
-
 </script>
 <style scoped>
-.dataset-container{
+.dataset-container {
   padding-left: 0 !important;
   padding-right: 0 !important;
-}
-.dataset-table {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  background-color: #ffffff !important;
-  color: #000000;
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  margin: 0 !important
-}
-.v-row.font-weight-medium {
-  border-bottom: 1px solid #e0e0e0;
-}
-.bg-light {
-  background-color: #f9fafb !important;
-}
-.text-grey {
-  color: #9e9e9e;
 }
 </style>
