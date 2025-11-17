@@ -13,7 +13,7 @@
       {{ error }}
     </v-alert>
     <!-- Dataset Form -->
-    <DatasetForm v-model="localDataset" :isEdit="isEdit" />
+    <DatasetForm v-model="localDataset" :isEdit="isEdit" :endpoints="dataEndpoints"/>
     <!-- Action Button -->
     <div class="text-right mt-6">
       <v-btn color="primary" class="px-6" :loading="loading" @click="handleSubmit">
@@ -35,6 +35,11 @@ const store = useStore();
 // Vuex reactive states
 const loading = computed(() => store.getters["dataset/loading"]);
 const error = computed(() => store.getters["dataset/error"]);
+
+const dataEndpoints = computed(
+  () => store.getters["dataEndpoint/dataEndpoints"] || []
+);
+
 // Local reactive dataset object (v-model)
 const localDataset = ref({
   name: "",
@@ -43,11 +48,18 @@ const localDataset = ref({
   storageType: "",
   enablev3: false,
   tablePrefix: "",
+  endpointServerUUID: ""
 });
 const isEdit = ref(false);
 
 //---Load exiting profile
 onMounted(async () => {
+  try {
+    await store.dispatch("dataEndpoint/fetchDataEndpoints");
+  } catch (err) {
+    console.error("Error fetching data endpoints:", err);
+  }
+
   const datasetUuid = route.params.id;
   if (datasetUuid) {
     try {
@@ -59,7 +71,8 @@ onMounted(async () => {
           applicationPackageId: existing.applicationPackageId || "",
           storageType: existing.storageType || "",
           enablev3: existing.enablev3 || false,
-          tablePrefix: existing.tablePrefix
+          tablePrefix: existing.tablePrefix,
+          endpointServerUUID: existing.endpointServerUUID || ""
         };
         isEdit.value = true;
       }

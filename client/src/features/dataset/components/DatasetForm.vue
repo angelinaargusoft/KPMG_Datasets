@@ -40,6 +40,18 @@
           variant="outlined"
           dense
         />
+        <v-select
+          v-if="localDataset.storageType === 'Blob'"
+          v-model="localDataset.endpointServerUUID"
+          :items="endpointServers"
+          label="Select Endpoint Server *"
+          item-title="label"
+          item-value="value"
+          variant="outlined"
+          dense
+          :rules="[v => !!v || 'Endpoint Server is required for Blob storage']"
+          required
+        />
         <!-- Enable V3 Radio Group -->
         <div class="mt-4">
           <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
@@ -62,7 +74,7 @@
   </v-card>
 </template>
 <script setup>
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 const props = defineProps({
@@ -75,11 +87,17 @@ const props = defineProps({
       storageType: "",
       enablev3: false,
       tablePrefix: "",
+      endpointServerUUID: ""
     }),
   },
   isEdit: { type: Boolean, default: false },
+  endpoints: {
+    type: Array,
+    default: () => [],
+  },
 });
 const emit = defineEmits(["update:modelValue", "submit"]);
+
 const formRef = ref(null);
 const valid = ref(false);
 // Mock dropdown data (can be replaced by API)
@@ -90,6 +108,14 @@ const applicationPackages = [
   "Retail Data Engine",
 ];
 const storageOptions = ["Blob", "SFTP"];
+
+const endpointServers = computed(() =>
+  props.endpoints.map((ep) => ({
+    label: ep.name,
+    value: ep.uuid,
+  }))
+);
+
 // Local deep clone to avoid mutating props directly
 const localDataset = reactive(JSON.parse(JSON.stringify(props.modelValue)));
 // Watch for parent updates → update local form
