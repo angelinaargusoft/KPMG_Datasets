@@ -9,6 +9,8 @@ const {
   deleteDataset,
 }  = require("./datasetController");
 
+const { upload, uploadDatasetFile } = require("../datasetUploadHistory/datasetUploadHistoryController");
+
 
 router.post("/", createDataset);
 
@@ -17,6 +19,8 @@ router.get("/", getAllDatasets);
 router.get("/:id", getDatasetById);
 
 router.get("/uuid/:uuid", getDatasetByUUID);
+
+router.post("/:uuid/upload", upload.single("file"), uploadDatasetFile);
 
 router.put("/:id", updateDataset);
 
