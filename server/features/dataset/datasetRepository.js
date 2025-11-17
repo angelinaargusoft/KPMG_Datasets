@@ -1,4 +1,5 @@
 const pool = require("../../config/database");
+
 async function createDataset(dataset) {
   const {
     uuid,
@@ -9,12 +10,15 @@ async function createDataset(dataset) {
     enablev3,
     tablePrefix,
     createdBy,
+    endpointServerUUID,  
   } = dataset;
+
   const query = `
     INSERT INTO Datasets
-    (uuid, name, description, applicationPackageId, storageType, enablev3, tablePrefix, createdBy)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (uuid, name, description, applicationPackageId, storageType, enablev3, tablePrefix, createdBy, endpointServerUUID)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
+
   const params = [
     uuid,
     name,
@@ -24,7 +28,9 @@ async function createDataset(dataset) {
     enablev3 ?? false,
     tablePrefix || null,
     createdBy || null,
+    endpointServerUUID || null, 
   ];
+
   const [result] = await pool.execute(query, params);
   return await getDatasetById(result.insertId);
 }
@@ -59,30 +65,38 @@ async function getDatasetByUUID(uuid) {
 async function updateDataset(id, data) {
   const existingDataset = await getDatasetById(id);
   if (!existingDataset) throw new Error("Dataset not found");
+
   const fields = [];
   const values = [];
+
   for (const [key, value] of Object.entries(data)) {
     fields.push(`${key} = ?`);
     values.push(value);
   }
+
   if (fields.length === 0) return existingDataset;
+
   const query = `
     UPDATE Datasets
     SET ${fields.join(", ")}, lastChangeAt = CURRENT_TIMESTAMP(6)
     WHERE id = ?
   `;
+
   values.push(id);
   await pool.execute(query, values);
+
   return await getDatasetById(id);
 }
 
 async function deleteDataset(id) {
   const existingDataset = await getDatasetById(id);
   if (!existingDataset) throw new Error("Dataset not found");
+
   const query = `
     DELETE FROM Datasets
     WHERE id = ?
   `;
+
   await pool.execute(query, [id]);
   return existingDataset;
 }
