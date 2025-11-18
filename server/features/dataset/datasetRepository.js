@@ -63,7 +63,8 @@ async function getDatasetByUUID(uuid) {
 }
 
 async function updateDataset(id, data) {
-  const existingDataset = await getDatasetById(id);
+  console.log(id);
+  const existingDataset = await getDatasetByUUID(id);
   if (!existingDataset) throw new Error("Dataset not found");
 
   const fields = [];
@@ -79,7 +80,7 @@ async function updateDataset(id, data) {
   const query = `
     UPDATE Datasets
     SET ${fields.join(", ")}, lastChangeAt = CURRENT_TIMESTAMP(6)
-    WHERE id = ?
+    WHERE uuid = ?
   `;
 
   values.push(id);

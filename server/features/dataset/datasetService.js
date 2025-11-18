@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const DatasetRepository = require("./datasetRepository");
 const DataEndpointService = require("../dataEndpoint/dataEndpointService");  // <-- added
-const { createContainerIfNotExists } = require("./blobStorageService");
+const { createContainerIfNotExists, deleteContainer } = require("./blobStorageService");
 
 async function ensureEndpointExists(endpointUUID) {
   if (!endpointUUID) return; 
@@ -103,8 +103,34 @@ async function updateDataset(id, data) {
 }
 
 async function deleteDataset(id) {
+  // 1. Load dataset first (before deleting DB record)
+  const dataset = await DatasetRepository.getDatasetById(id);
+  if (!dataset) throw new Error("Dataset not found");
+
+  // 2. If Blob → delete Azure container
+  if (dataset.storageType === "Blob" && dataset.endpointServerUUID) {
+    const endpoint = await DataEndpointService.getDataEndpointByUUID(
+      dataset.endpointServerUUID
+    );
+
+    if (!endpoint) {
+      console.warn("Dataset endpoint not found — skipping container deletion.");
+    } else {
+      try {
+        const connectionString = endpoint.hostname; // adjust if column differs
+        const containerName = dataset.uuid.toLowerCase();
+
+        await deleteContainer(connectionString, containerName);
+
+        console.log(`Deleted container: ${containerName}`);
+      } catch (err) {
+        console.error("Failed to delete container:", err);
+      }
+    }
+  }
+
+  // 3. Delete dataset from database
   const deletedDataset = await DatasetRepository.deleteDataset(id);
-  // Optionally: delete blob container if needed
   return deletedDataset;
 }
 
