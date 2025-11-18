@@ -35,8 +35,18 @@ async function uploadBufferToContainer(connectionString, containerName, buffer, 
   };
 }
 
+async function deleteBlobFromContainer(connectionString, containerName, blobName) {
+  const blobService = BlobServiceClient.fromConnectionString(connectionString);
+  const containerClient = blobService.getContainerClient(containerName);
+  const blobClient = containerClient.getBlockBlobClient(blobName);
+
+  const response = await blobClient.deleteIfExists();
+  return response.succeeded;
+}
+
 module.exports = {
   createContainerIfNotExists,
   uploadBufferToContainer,
+  deleteBlobFromContainer
 };
 

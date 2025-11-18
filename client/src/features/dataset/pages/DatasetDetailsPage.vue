@@ -41,7 +41,7 @@
       </div>
     </v-card>
 
-    <!-- File list (loaded from backend soon) -->
+    <!-- File list -->
     <BaseTable
       :columns="columns"
       :data="blobList"
@@ -50,13 +50,26 @@
       empty-text="No files uploaded yet"
     >
       <template #rows>
-        <v-row v-for="file in blobList" :key="file.name" class="py-3 px-4">
+        <v-row v-for="file in blobList" :key="file.id || file.name" class="py-3 px-4">
           <v-col cols="4">{{ file.name }}</v-col>
           <v-col cols="2">{{ formatSize(file.size) }}</v-col>
           <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
           <v-col cols="3" class="text-right">
+            <!-- Download -->
             <v-btn icon @click="downloadFile(file)">
               <v-icon>mdi-download</v-icon>
+            </v-btn>
+            <!-- Delete -->
+            <v-btn icon @click="deleteFile(file)">
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
+            <!-- Import as NEW (stub for now) -->
+            <v-btn icon @click="importAsNew(file)">
+              <v-icon>mdi-import</v-icon>
+            </v-btn>
+            <!-- Import & APPEND (stub for now) -->
+            <v-btn icon @click="importAndAppend(file)">
+              <v-icon>mdi-plus-circle-outline</v-icon>
             </v-btn>
           </v-col>
         </v-row>
@@ -66,12 +79,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import BaseTable from "@/components/common/BaseTable.vue";
-import { uploadDatasetFile } from "@/features/dataset/api/fileUploadService"; // ✔ your new service
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+import BaseTable from "@/components/common/BaseTable.vue";
 
 const route = useRoute();
+const store = useStore();
 const datasetUUID = route.params.id;
 
 // -------------------------------
@@ -81,8 +95,9 @@ const pendingFiles = ref([]);
 const fileInput = ref(null);
 const isDragOver = ref(false);
 
-const blobList = ref([]); // will later be filled from backend
-const loadingFiles = ref(false);
+// Use Vuex store for files + loading
+const blobList = computed(() => store.getters["datasetFileUpload/files"]);
+const loadingFiles = computed(() => store.getters["datasetFileUpload/loading"]);
 
 // -------------------------------
 // Table columns
@@ -94,36 +109,37 @@ const columns = [
 ];
 
 // -------------------------------
-// Upload all files using BACKEND
+// Upload all files using BACKEND via store
 // -------------------------------
 async function uploadAll() {
   for (const file of pendingFiles.value) {
-    await uploadDatasetFile(datasetUUID, file);
+    await store.dispatch("datasetFileUpload/uploadFileToDataset", {
+      datasetUUID,
+      file,
+    });
   }
-
   pendingFiles.value = [];
-  await loadFileList();
 }
 
 // -------------------------------
-// Load uploaded files (from backend)
+// Load uploaded files (from backend via store)
 // -------------------------------
 async function loadFileList() {
-  loadingFiles.value = true;
-
-  // TODO: replace with GET /datasets/:uuid/files from backend later
-  blobList.value = []; // placeholder
-
-  loadingFiles.value = false;
+  await store.dispatch("datasetFileUpload/fetchDatasetFiles", datasetUUID);
 }
 
 // -------------------------------
 // Drag & Drop + file picker
 // -------------------------------
-function onDragOver(e) { e.dataTransfer.dropEffect = "copy"; }
-function onDragEnter() { isDragOver.value = true; }
-function onDragLeave() { isDragOver.value = false; }
-
+function onDragOver(e) {
+  e.dataTransfer.dropEffect = "copy";
+}
+function onDragEnter() {
+  isDragOver.value = true;
+}
+function onDragLeave() {
+  isDragOver.value = false;
+}
 function onDrop(e) {
   isDragOver.value = false;
   addFiles(e.dataTransfer.files);
@@ -157,6 +173,33 @@ function formatDate(date) {
   return new Date(date).toLocaleString();
 }
 
+// Download stub
+function downloadFile(file) {
+  console.log("Download clicked for", file);
+  // e.g., window.location = `/datasets/${datasetUUID}/files/${encodeURIComponent(file.name)}`;
+}
+
+// 🔥 Delete file via store (removes blob + history)
+async function deleteFile(file) {
+  if (!file.id) {
+    console.warn("Cannot delete file: missing id", file);
+    return;
+  }
+  await store.dispatch("datasetFileUpload/removeDatasetFile", {
+    recordId: file.id,
+    datasetUUID,
+  });
+}
+
+// Stubs for import actions
+function importAsNew(file) {
+  console.log("Import as NEW", file);
+}
+
+function importAndAppend(file) {
+  console.log("Import & APPEND", file);
+}
+
 // Load list initially
 onMounted(loadFileList);
 </script>
@@ -183,3 +226,4 @@ onMounted(loadFileList);
   max-width: 60%;
 }
 </style>
+

@@ -14,3 +14,14 @@ export const uploadDatasetFile = async (uuid, file) => {
 
   return res.data;
 };
+
+export const getDatasetFiles = async (uuid) => {
+  const res = await api.get(`/datasets/${uuid}/files`);
+  // adjust if your backend returns { files: [...] }
+  return res.data.files || res.data;
+};
+
+export const deleteDatasetFile = async (id) => {
+  const res = await api.delete(`/datasets/uploads/${id}`);
+  return res.data;
+};

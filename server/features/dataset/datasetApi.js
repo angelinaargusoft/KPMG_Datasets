@@ -9,7 +9,7 @@ const {
   deleteDataset,
 }  = require("./datasetController");
 
-const { upload, uploadDatasetFile } = require("../datasetUploadHistory/datasetUploadHistoryController");
+const { upload, uploadDatasetFile, getDatasetFiles, deleteDatasetFile } = require("../datasetUploadHistory/datasetUploadHistoryController");
 
 
 router.post("/", createDataset);
@@ -22,7 +22,11 @@ router.get("/uuid/:uuid", getDatasetByUUID);
 
 router.post("/:uuid/upload", upload.single("file"), uploadDatasetFile);
 
+router.get("/:uuid/files", getDatasetFiles);
+
 router.put("/:id", updateDataset);
+
+router.delete("/uploads/:id", deleteDatasetFile);
 
 router.delete("/:id", deleteDataset);
 
