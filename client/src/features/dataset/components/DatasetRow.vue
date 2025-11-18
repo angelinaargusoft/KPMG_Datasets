@@ -13,11 +13,11 @@
     <v-col cols="1">{{ dataset.enablev3 ? "V3" : "V2" }}</v-col>
     <!-- Actions -->
     <v-col cols="2" class="text-right">
-      <v-btn icon @click="$emit('view', dataset)">
-        <v-icon>mdi-eye-outline</v-icon>
-      </v-btn>
       <v-btn icon @click="editDataset(dataset)">
         <v-icon>mdi-pencil-outline</v-icon>
+      </v-btn>
+      <v-btn icon @click="$emit('manage', dataset)">
+        <v-icon>mdi-filter-variant</v-icon>
       </v-btn>
       <v-btn icon @click="confirmDelete(dataset)">
         <v-icon>mdi-delete-outline</v-icon>

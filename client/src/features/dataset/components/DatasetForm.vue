@@ -13,6 +13,7 @@
           dense
           :rules="[v => !!v || 'Dataset Name is required']"
           required
+          :disabled="isEdit"
         />
         <!-- Description -->
         <v-textarea
@@ -39,6 +40,7 @@
           label="Select Storage Type"
           variant="outlined"
           dense
+          :disabled="isEdit"
         />
         <v-select
           v-if="localDataset.storageType === 'Blob'"
@@ -51,6 +53,7 @@
           dense
           :rules="[v => !!v || 'Endpoint Server is required for Blob storage']"
           required
+          :disabled="isEdit"
         />
         <!-- Enable V3 Radio Group -->
         <div class="mt-4">

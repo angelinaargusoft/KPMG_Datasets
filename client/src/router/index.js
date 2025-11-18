@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const DatasetPage = () => import("@/features/dataset/pages/DatasetPage.vue");
-const AddDatasetPage = () => import("@/features/dataset/pages/AddDatasetPage.vue");
+const AddOrEditDatasetPage = () => import("@/features/dataset/pages/AddOrEditDatasetPage.vue");
 const DatasetDetailsPage = () => import('@/features/dataset/pages/DatasetDetailsPage.vue');
 
 const routes = [
@@ -13,13 +13,13 @@ const routes = [
   {
     path: "/admin/datasets/:id/edit",
     name: "EditDataset",
-    component: AddDatasetPage,
+    component: AddOrEditDatasetPage,
     props: true
   },
   {
     path: "/admin/datasets/add",
     name: "AddDataset",
-    component: AddDatasetPage
+    component: AddOrEditDatasetPage
   },
   {
     path: "/admin/datasets/details/:id",

@@ -59,8 +59,8 @@
             <v-btn icon @click="downloadFile(file)">
               <v-icon>mdi-download</v-icon>
             </v-btn>
-            <!-- Delete -->
-            <v-btn icon @click="deleteFile(file)">
+            <!-- Delete (opens confirmation dialog) -->
+            <v-btn icon @click="openDeleteDialog(file)">
               <v-icon>mdi-trash-can-outline</v-icon>
             </v-btn>
             <!-- Import as NEW (stub for now) -->
@@ -75,6 +75,24 @@
         </v-row>
       </template>
     </BaseTable>
+
+    <!-- 🔥 Delete File Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="420">
+      <v-card>
+        <v-card-title class="text-h6 font-weight-medium">
+          Confirm Deletion
+        </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <strong>{{ selectedFile?.name }}</strong>?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="error" @click="confirmDeleteFile">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -94,6 +112,10 @@ const datasetUUID = route.params.id;
 const pendingFiles = ref([]);
 const fileInput = ref(null);
 const isDragOver = ref(false);
+
+// delete dialog state
+const deleteDialog = ref(false);
+const selectedFile = ref(null);
 
 // Use Vuex store for files + loading
 const blobList = computed(() => store.getters["datasetFileUpload/files"]);
@@ -179,16 +201,28 @@ function downloadFile(file) {
   // e.g., window.location = `/datasets/${datasetUUID}/files/${encodeURIComponent(file.name)}`;
 }
 
-// 🔥 Delete file via store (removes blob + history)
-async function deleteFile(file) {
-  if (!file.id) {
+// 🔥 Open delete dialog for a specific file
+function openDeleteDialog(file) {
+  selectedFile.value = file;
+  deleteDialog.value = true;
+}
+
+// 🔥 Confirm delete file via store (removes blob + history)
+async function confirmDeleteFile() {
+  const file = selectedFile.value;
+  if (!file || !file.id) {
     console.warn("Cannot delete file: missing id", file);
+    deleteDialog.value = false;
     return;
   }
+
   await store.dispatch("datasetFileUpload/removeDatasetFile", {
     recordId: file.id,
     datasetUUID,
   });
+
+  deleteDialog.value = false;
+  selectedFile.value = null;
 }
 
 // Stubs for import actions
@@ -226,4 +260,3 @@ onMounted(loadFileList);
   max-width: 60%;
 }
 </style>
-

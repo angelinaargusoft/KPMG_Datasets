@@ -72,14 +72,10 @@ async function getDatasetByUUID(uuid) {
 
 async function updateDataset(id, data) {
   const allowedFields = [
-    "name",
     "description",
     "applicationPackageId",
-    "storageType",
     "enablev3",
     "tablePrefix",
-    "lastChangeBy",
-    "endpointServerUUID",
   ];
 
   const cleanUpdates = {};

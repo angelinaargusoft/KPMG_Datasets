@@ -70,7 +70,7 @@ onMounted(async () => {
           description: existing.description || "",
           applicationPackageId: existing.applicationPackageId || "",
           storageType: existing.storageType || "",
-          enablev3: existing.enablev3 || false,
+          enablev3: Boolean(existing.enablev3) || false,
           tablePrefix: existing.tablePrefix,
           endpointServerUUID: existing.endpointServerUUID || ""
         };
