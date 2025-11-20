@@ -1,44 +1,32 @@
 <template>
   <v-container class="dataset-container py-8" theme="light" fluid>
     <!-- Header -->
-    <div class="d-flex justify-space-between align-center mb-6">
+    <div class="d-flex justify-space-between align-center mb-6 flex-wrap">
       <h2 class="text-h5 font-weight-bold">Datasets</h2>
-      <v-btn
-        color="primary"
-        prepend-icon="mdi-database-plus"
-        @click="$router.push('/admin/datasets/add')"
-      >
-        Add Dataset
-      </v-btn>
+
+      <div class="d-flex align-center" style="gap: 12px; flex: 1; justify-content: flex-end;">
+
+        <!-- Wider + Thinner Search -->
+        <v-text-field v-model="searchQuery" label="Search datasets..." density="compact" variant="outlined"
+          class="search-clean" hide-details>
+          <template #append-inner>
+            <span class="material-symbols-outlined" style="cursor:pointer;">search</span>
+          </template>
+        </v-text-field>
+
+        <!-- Icon-only Add Dataset Button -->
+        <v-btn variant="text" class="add-icon-btn" @click="$router.push('/admin/datasets/add')">
+          <span class="material-symbols-outlined">add_circle</span>
+        </v-btn>
+
+
+      </div>
     </div>
-    <!-- Search -->
-    <v-row class="mb-4" dense>
-      <v-col cols="12" sm="6" md="4">
-        <v-text-field
-          v-model="searchQuery"
-          label="Search datasets..."
-          dense
-          outlined
-          append-icon="mdi-magnify"
-          clearable
-        />
-      </v-col>
-    </v-row>
     <!-- REUSABLE TABLE -->
-    <BaseTable
-      :columns="columns"
-      :data="filteredDatasets"
-      :loading="loading"
-      show-actions
-      empty-text="No matching datasets found."
-    >
+    <BaseTable :columns="columns" :data="filteredDatasets" :loading="loading" show-actions
+      empty-text="No matching datasets found.">
       <template #rows>
-        <DatasetRow
-          v-for="dataset in filteredDatasets"
-          :key="dataset.id"
-          :dataset="dataset"
-          @view="handleView"
-        />
+        <DatasetRow v-for="dataset in filteredDatasets" :key="dataset.id" :dataset="dataset" @view="handleView" />
       </template>
     </BaseTable>
   </v-container>
@@ -83,5 +71,26 @@ function handleView(dataset) {
 .dataset-container {
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+.search-clean {
+  min-width: 280px;
+  /* wider */
+  max-width: 360px;
+}
+
+.search-clean .v-field {
+  border-radius: 8px !important;
+}
+
+.add-icon-btn {
+  padding: 0 !important;
+  min-width: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.add-icon-btn .material-symbols-outlined {
+  font-size: 32px; 
 }
 </style>

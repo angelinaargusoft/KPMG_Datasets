@@ -14,13 +14,19 @@
     <!-- Actions -->
     <v-col cols="2" class="text-right">
       <v-btn icon @click="editDataset(dataset)">
-        <v-icon>mdi-pencil-outline</v-icon>
+        <span class="material-symbols-outlined">
+          edit
+        </span>
       </v-btn>
       <v-btn icon @click="$emit('manage', dataset)">
-        <v-icon>mdi-filter-variant</v-icon>
+        <span class="material-symbols-outlined">
+          sort
+        </span>
       </v-btn>
       <v-btn icon @click="confirmDelete(dataset)">
-        <v-icon>mdi-delete-outline</v-icon>
+        <span class="material-symbols-outlined">
+          delete
+        </span>
       </v-btn>
     </v-col>
     <!-- Delete Confirmation Dialog -->
@@ -88,20 +94,24 @@ function formatDate(date) {
   background-color: #FFFFFF;
   transition: background-color 0.2s ease;
 }
+
 .dataset-row:hover {
   background-color: #F5F8FF;
   cursor: pointer;
 }
+
 .dataset-name {
   color: #1565C0;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s ease, text-decoration 0.2s ease;
 }
+
 .dataset-name:hover {
   color: #0D47A1;
   text-decoration: underline;
 }
+
 .v-col {
   white-space: normal !important;
   overflow: visible !important;
