@@ -4,69 +4,104 @@
     <div class="d-flex justify-space-between align-center mb-6 flex-wrap">
       <h2 class="text-h5 font-weight-bold">Datasets</h2>
 
-      <div class="d-flex align-center" style="gap: 12px; flex: 1; justify-content: flex-end;">
-
+      <div
+        class="d-flex align-center"
+        style="gap: 12px; flex: 1; justify-content: flex-end;"
+      >
         <!-- Wider + Thinner Search -->
-        <v-text-field v-model="searchQuery" label="Search datasets..." density="compact" variant="outlined"
-          class="search-clean" hide-details>
+        <v-text-field
+          v-model="searchQuery"
+          label="Search datasets..."
+          density="compact"
+          variant="outlined"
+          class="search-clean"
+          hide-details
+        >
           <template #append-inner>
-            <span class="material-symbols-outlined" style="cursor:pointer;">search</span>
+            <span
+              class="material-symbols-outlined"
+              style="cursor: pointer;"
+            >
+              search
+            </span>
           </template>
         </v-text-field>
 
         <!-- Icon-only Add Dataset Button -->
-        <v-btn variant="text" class="add-icon-btn" @click="$router.push('/admin/datasets/add')">
+        <v-btn
+          variant="text"
+          class="add-icon-btn"
+          @click="$router.push('/admin/datasets/add')"
+        >
           <span class="material-symbols-outlined">add_circle</span>
         </v-btn>
-
-
       </div>
     </div>
+
     <!-- REUSABLE TABLE -->
-    <BaseTable :columns="columns" :data="filteredDatasets" :loading="loading" show-actions
-      empty-text="No matching datasets found.">
-      <template #rows>
-        <DatasetRow v-for="dataset in filteredDatasets" :key="dataset.id" :dataset="dataset" @view="handleView" />
+    <BaseTable
+      :columns="columns"
+      :data="filteredDatasets"
+      :loading="loading"
+      show-actions
+      :actions-cols="2"
+      empty-text="No matching datasets found."
+    >
+      <template #rows="{ items }">
+        <DatasetRow
+          v-for="dataset in items"
+          :key="dataset.id"
+          :dataset="dataset"
+        />
       </template>
     </BaseTable>
   </v-container>
 </template>
+
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import DatasetRow from "../components/DatasetRow.vue";
 import BaseTable from "@/components/common/BaseTable.vue";
+
 const store = useStore();
+
 const searchQuery = ref("");
 const loading = ref(false);
+
 // Fetch datasets
 onMounted(async () => {
   loading.value = true;
   await store.dispatch("dataset/fetchDatasets");
   loading.value = false;
 });
-// Table column definitions
+
+// Table column definitions — col sizes line up with DatasetRow v-cols
 const columns = [
-  { label: "Name", key: "name", cols: 2 },
-  { label: "Description", key: "description", cols: 3 },
-  { label: "Created At", key: "createdAt", cols: 1 },
-  { label: "Created By", key: "createdBy", cols: 2 },
-  { label: "Storage", key: "storage", cols: 1 },
-  { label: "Data Import", key: "import", cols: 1 },
+  { label: "Name",        key: "name",        cols: 2 },
+  { label: "Description", key: "description", cols: 2 },
+  { label: "Created At",  key: "createdAt",   cols: 1 },
+  { label: "Created By",  key: "createdBy",   cols: 2 },
+  { label: "Storage",     key: "storage",     cols: 1 },
+  { label: "Data Import Version", key: "import",      cols: 2 },
+  // + Actions col from show-actions (2) = 12 total
 ];
-// Dataset data
+
+// Raw datasets from store
 const datasets = computed(() => store.getters["dataset/datasets"] || []);
+
+// Filtered by search query
 const filteredDatasets = computed(() => {
   if (!searchQuery.value) return datasets.value;
+
   const q = searchQuery.value.toLowerCase();
+
   return datasets.value.filter((d) =>
     Object.values(d).join(" ").toLowerCase().includes(q)
   );
 });
-function handleView(dataset) {
-  alert(`Viewing dataset: ${dataset.name}`);
-}
 </script>
+
 <style scoped>
 .dataset-container {
   padding-left: 0 !important;
@@ -75,7 +110,6 @@ function handleView(dataset) {
 
 .search-clean {
   min-width: 280px;
-  /* wider */
   max-width: 360px;
 }
 
@@ -91,6 +125,6 @@ function handleView(dataset) {
 }
 
 .add-icon-btn .material-symbols-outlined {
-  font-size: 32px; 
+  font-size: 32px;
 }
 </style>

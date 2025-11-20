@@ -2,7 +2,9 @@
   <v-container class="py-8" fluid>
     <!-- Back Button -->
     <v-btn variant="text" color="primary" @click="$router.push('/admin/datasets')">
-      <v-icon left>mdi-arrow-left</v-icon>
+      <span class="material-symbols-outlined" style="margin-right: 6px;">
+        arrow_back
+      </span>
       Back to Datasets
     </v-btn>
 
@@ -19,7 +21,9 @@
         @drop.prevent="onDrop"
         @click="openFilePicker"
       >
-        <v-icon size="38">mdi-cloud-upload-outline</v-icon>
+        <span class="material-symbols-outlined" style="font-size: 38px;">
+          cloud_upload
+        </span>
         <div class="dropzone-text">
           <div class="text-h6">Drop files here or click to select</div>
           <div class="text--secondary">Files will be uploaded via backend</div>
@@ -34,8 +38,14 @@
       </div>
 
       <div class="d-flex justify-end mt-4">
-        <v-btn color="primary" :disabled="!pendingFiles.length" @click="uploadAll">
-          <v-icon left>mdi-upload</v-icon>
+        <v-btn
+          color="primary"
+          :disabled="!pendingFiles.length"
+          @click="uploadAll"
+        >
+          <span class="material-symbols-outlined" style="margin-right: 6px;">
+            upload
+          </span>
           Upload Files
         </v-btn>
       </div>
@@ -48,28 +58,41 @@
       :loading="loadingFiles"
       show-actions
       empty-text="No files uploaded yet"
+      actions-cols="3"
     >
-      <template #rows>
-        <v-row v-for="file in blobList" :key="file.id || file.name" class="py-3 px-4">
+      <template #rows="{ items }">
+        <v-row
+          v-for="file in items"
+          :key="file.id || file.name"
+          class="py-3 px-4"
+        >
           <v-col cols="4">{{ file.name }}</v-col>
           <v-col cols="2">{{ formatSize(file.size) }}</v-col>
           <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
-          <v-col cols="3" class="text-right">
+          <v-col :cols="3">
             <!-- Download -->
             <v-btn icon @click="downloadFile(file)">
-              <v-icon>mdi-download</v-icon>
+              <span class="material-symbols-outlined">
+                download
+              </span>
             </v-btn>
-            <!-- Delete (opens confirmation dialog) -->
+            <!-- Delete -->
             <v-btn icon @click="openDeleteDialog(file)">
-              <v-icon>mdi-trash-can-outline</v-icon>
+              <span class="material-symbols-outlined">
+                delete
+              </span>
             </v-btn>
-            <!-- Import as NEW (stub for now) -->
+            <!-- Import as NEW -->
             <v-btn icon @click="importAsNew(file)">
-              <v-icon>mdi-import</v-icon>
+              <span class="material-symbols-outlined">
+                input
+              </span>
             </v-btn>
-            <!-- Import & APPEND (stub for now) -->
+            <!-- Import & APPEND -->
             <v-btn icon @click="importAndAppend(file)">
-              <v-icon>mdi-plus-circle-outline</v-icon>
+              <span class="material-symbols-outlined">
+                add_circle
+              </span>
             </v-btn>
           </v-col>
         </v-row>
@@ -95,6 +118,7 @@
     </v-dialog>
   </v-container>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
@@ -251,10 +275,12 @@ onMounted(loadFileList);
   cursor: pointer;
   transition: 0.2s;
 }
+
 .dropzone--over {
   border-color: #2196f3;
   background-color: #e3f2fd;
 }
+
 .dropzone-text {
   text-align: center;
   max-width: 60%;
