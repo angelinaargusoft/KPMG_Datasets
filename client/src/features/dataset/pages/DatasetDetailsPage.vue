@@ -69,32 +69,21 @@
           <v-col cols="4">{{ file.name }}</v-col>
           <v-col cols="2">{{ formatSize(file.size) }}</v-col>
           <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
-          <v-col :cols="3">
-            <!-- Download -->
-            <v-btn icon @click="downloadFile(file)">
-              <span class="material-symbols-outlined">
-                download
-              </span>
-            </v-btn>
-            <!-- Delete -->
-            <v-btn icon @click="openDeleteDialog(file)">
-              <span class="material-symbols-outlined">
-                delete
-              </span>
-            </v-btn>
-            <!-- Import as NEW -->
-            <v-btn icon @click="importAsNew(file)">
-              <span class="material-symbols-outlined">
-                input
-              </span>
-            </v-btn>
-            <!-- Import & APPEND -->
-            <v-btn icon @click="importAndAppend(file)">
-              <span class="material-symbols-outlined">
-                add_circle
-              </span>
-            </v-btn>
-          </v-col>
+          <v-col cols="2" class="text-right">
+  <ActionIconButton
+    type="edit"
+    @click="editDataset(dataset)"
+  />
+  <ActionIconButton
+    type="manage"
+    @click="$emit('manage', dataset)"
+  />
+  <ActionIconButton
+    type="delete"
+    @click="confirmDelete(dataset)"
+  />
+</v-col>
+
         </v-row>
       </template>
     </BaseTable>

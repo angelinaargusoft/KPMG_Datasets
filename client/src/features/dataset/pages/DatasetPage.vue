@@ -80,8 +80,8 @@ onMounted(async () => {
 const columns = [
   { label: "Name",        key: "name",        cols: 2, sortable: true },
   { label: "Description", key: "description", cols: 2 },
-  { label: "Created At",  key: "createdAt",   cols: 1, sortable: true },
-  { label: "Created By",  key: "createdBy",   cols: 2,  },
+  { label: "Created At",  key: "createdAt",   cols: 2, sortable: true },
+  { label: "Created By",  key: "createdBy",   cols: 1,  },
   { label: "Storage",     key: "storageType",     cols: 1, sortable: true },
   { label: "Data Import Version", key: "enablev3",      cols: 2, sortable: true },
   // + Actions col from show-actions (2) = 12 total

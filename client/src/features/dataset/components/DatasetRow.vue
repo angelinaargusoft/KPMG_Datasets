@@ -11,13 +11,13 @@
       {{ dataset.description || "—" }}
     </v-col>
 
-    <v-col cols="1">
+    <v-col cols="2">
   <span>{{ uploadedAtFormatted.date }}</span>
   <span class="d-block">{{ uploadedAtFormatted.time }}</span>
 </v-col>
 
 
-    <v-col cols="2">
+    <v-col cols="1">
       Angelina
     </v-col>
 
@@ -31,24 +31,20 @@
 
     <!-- Actions -->
     <v-col cols="2">
-      <v-btn icon @click="editDataset(dataset)">
-        <span class="material-symbols-outlined">
-          edit
-        </span>
-      </v-btn>
+  <ActionIconButton
+    type="edit"
+    @click="editDataset(dataset)"
+  />
+  <ActionIconButton
+    type="manage"
+    @click="$emit('manage', dataset)"
+  />
+  <ActionIconButton
+    type="delete"
+    @click="confirmDelete(dataset)"
+  />
+</v-col>
 
-      <v-btn icon @click="$emit('manage', dataset)">
-        <span class="material-symbols-outlined">
-          sort
-        </span>
-      </v-btn>
-
-      <v-btn icon @click="confirmDelete(dataset)">
-        <span class="material-symbols-outlined">
-          delete
-        </span>
-      </v-btn>
-    </v-col>
 
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="420">
