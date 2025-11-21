@@ -12,8 +12,10 @@
     </v-col>
 
     <v-col cols="1">
-      {{ formatDate(dataset.createdAt) }}
-    </v-col>
+  <span>{{ uploadedAtFormatted.date }}</span>
+  <span class="d-block">{{ uploadedAtFormatted.time }}</span>
+</v-col>
+
 
     <v-col cols="2">
       Angelina
@@ -69,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
@@ -111,10 +113,21 @@ function goToDetails(dataset) {
 }
 
 // Date formatting
-function formatDate(date) {
-  if (!date) return "—";
-  return new Date(date).toLocaleDateString();
+function formatDateTime(ts) {
+  const d = new Date(ts);
+
+  return {
+    date: d.toLocaleDateString("en-GB"),   // DD/MM/YYYY
+    time: d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false 
+    }),
+  };
 }
+
+const uploadedAtFormatted = computed(() => formatDateTime(props.dataset.createdAt));
+
 </script>
 
 <style scoped>
