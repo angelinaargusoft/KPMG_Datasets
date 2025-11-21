@@ -14,6 +14,7 @@ declare module 'vue' {
     ActionIconButton: typeof import('./src/components/common/ActionIconButton.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     BaseTable: typeof import('./src/components/common/BaseTable.vue')['default']
+    BaseTablePagination: typeof import('./src/components/common/BaseTablePagination.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
