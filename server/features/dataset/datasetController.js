@@ -1,7 +1,6 @@
 const DatasetService = require("./datasetService");
 async function createDataset(req, res, next) {
   try {
-    console.log(req.body);
     const dataset = await DatasetService.createDataset(req.body);
     res.status(201).json({ message: "Dataset created", dataset });
   } catch (err) {
@@ -10,8 +9,19 @@ async function createDataset(req, res, next) {
 }
 async function getAllDatasets(req, res, next) {
   try {
-    const datasets = await DatasetService.getAllDatasets();
-    res.json(datasets);
+    const { page = 1, pageSize = 10 } = req.query;
+
+    // ensure they’re numbers and >= 1
+    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+    const parsedPageSize = Math.max(parseInt(pageSize, 10) || 10, 1);
+
+    const result = await DatasetService.getDatasetsPaginated(
+      parsedPage,
+      parsedPageSize
+    );
+
+    //{ data: [...], pagination: {...} }
+    res.json(result);
   } catch (err) {
     next(err);
   }

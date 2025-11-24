@@ -16,9 +16,9 @@ router.post("/", createDataset);
 
 router.get("/", getAllDatasets);
 
-router.get("/:id", getDatasetById);
-
 router.get("/uuid/:uuid", getDatasetByUUID);
+
+router.get("/:id", getDatasetById);
 
 router.post("/:uuid/upload", upload.single("file"), uploadDatasetFile);
 

@@ -1,14 +1,18 @@
 import api from "@/plugins/axios"; 
 
-//Create a new dataset
+// Create a new dataset
 export const createDataset = async (data) => {
   const res = await api.post(`/datasets`, data);
+  // backend: { message, dataset }
   return res.data.dataset || res.data;
 };
 
-// Fetch all datasets
-export const getAllDatasets = async () => {
-  const res = await api.get(`/datasets`);
+// Fetch all datasets (with pagination)
+export const getAllDatasets = async (page = 1, pageSize = 10) => {
+  const res = await api.get(`/datasets`, {
+    params: { page, pageSize },
+  });
+  // backend: { data: [...], pagination: {...} }
   return res.data;
 };
 
@@ -27,14 +31,16 @@ export const getDatasetByUUID = async (uuid) => {
 // Update dataset details
 export const updateDataset = async (id, data) => {
   const res = await api.put(`/datasets/${id}`, data);
-  return res.data;
+  // backend: { message, updated }
+  return res.data.updated || res.data;
 };
 
 // Delete dataset
 export const deleteDataset = async (id) => {
   const res = await api.delete(`/datasets/${id}`);
-  return res.data;
+  return res.data; // { message: "Dataset deleted" }
 };
+
 
 
 

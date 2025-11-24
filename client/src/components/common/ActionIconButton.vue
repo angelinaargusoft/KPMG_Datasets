@@ -39,15 +39,16 @@ import { ACTION_BUTTONS } from "@/config/actionButtons";
 const props = defineProps({
   type: {
     type: String,
-    required: true, // 'edit' | 'delete' | 'download' | etc
+    required: true, 
   },
+
   // optional overrides
   icon: String,
   color: String,
   tooltip: String,
   variant: {
     type: String,
-    default: "outlined", // or 'flat', 'outlined', etc.
+    default: "outlined", 
   },
 });
 

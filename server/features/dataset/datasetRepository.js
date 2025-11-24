@@ -35,6 +35,44 @@ async function createDataset(dataset) {
   return await getDatasetById(result.insertId);
 }
 
+async function getDatasetsPaginated(page = 1, pageSize = 10) {
+  // ensure positive integers
+  const limit = Math.max(parseInt(pageSize, 10) || 10, 1);
+  const currentPage = Math.max(parseInt(page, 10) || 1, 1);
+  const offset = (currentPage - 1) * limit;
+
+  // 1) total count
+  const [countRows] = await pool.execute(`
+    SELECT COUNT(*) AS total
+    FROM Datasets
+  `);
+  const totalItems = countRows[0]?.total || 0;
+  const totalPages = Math.max(Math.ceil(totalItems / limit), 1);
+
+  // 2) page of data
+  // IMPORTANT: use LIMIT offset, count with positional params
+  const query = `
+  SELECT *
+  FROM Datasets
+  ORDER BY createdAt DESC
+  LIMIT ${offset}, ${limit}
+`;
+
+const [rows] = await pool.query(query);
+
+  return {
+    data: rows,
+    pagination: {
+      page: currentPage,
+      pageSize: limit,
+      totalItems,
+      totalPages,
+      hasNextPage: currentPage < totalPages,
+      hasPrevPage: currentPage > 1,
+    },
+  };
+}
+
 async function getAllDatasets() {
   const query = `
     SELECT * FROM Datasets
@@ -104,6 +142,7 @@ async function deleteDataset(id) {
 
 module.exports = {
   createDataset,
+  getDatasetsPaginated,
   getAllDatasets,
   getDatasetById,
   getDatasetByUUID,

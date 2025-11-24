@@ -1,4 +1,10 @@
 <template>
+  <component
+    :is="embedded ? 'div' : 'v-card'"
+    class="pa-0 base-table"
+    :class="{ 'elevation-1': !embedded }"
+    v-bind="!embedded ? { outlined: true } : {}"
+  >
   <v-card outlined class="pa-0 elevation-1 base-table">
     <!-- Header Row -->
     <v-row class="font-weight-medium py-3 px-4 bg-light" no-gutters>
@@ -47,6 +53,7 @@
       <v-progress-circular indeterminate />
     </div>
   </v-card>
+</component>
 </template>
 
 <script setup>
@@ -95,6 +102,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  embedded: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:page", "update:itemsPerPage"]);
@@ -113,7 +124,6 @@ function onHeaderClick(col) {
   if (!col.sortable || !col.key) return;
 
   if (sortKey.value === col.key) {
-    // toggle asc <-> desc
     sortDirection.value =
       sortDirection.value === "asc" ? "desc" : "asc";
   } else {
@@ -159,7 +169,6 @@ const sortedItems = computed(() => {
   });
 });
 
-// ---------- helper for icon text ----------
 function getSortIcon(col) {
   // not sortable? shouldn't be called but safe default
   if (!col.sortable) return "arrow_drop_up";
@@ -207,13 +216,11 @@ function getSortIcon(col) {
   transition: opacity 0.2s, color 0.2s;
 }
 
-/* when column is actively sorted */
 .sort-icon.active {
   opacity: 1;
   color: #424242;
 }
 
-/* optional: hover effect */
 .sort-icon:hover {
   opacity: 1;
   color: #424242;

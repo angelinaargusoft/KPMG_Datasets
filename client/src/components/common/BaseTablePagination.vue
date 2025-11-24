@@ -1,15 +1,15 @@
 <template>
     <!-- Pagination + info + rows-per-page -->
     <div
-      v-if="pageCount > 1"
-      class="d-flex align-center px-4 py-4"
-    >
-      <!-- 🔹 LEFT: Page & records info -->
-      <div class="page-info">
-        Page {{ page }} of {{ pageCount }} ({{ totalItems }} records)
+  v-if="totalItems > 0"
+  class="d-flex align-center px-4 py-4"
+>
+      <!-- LEFT: Page & records info -->
+      <div >
+        <b>{{ totalItems }}</b> records
       </div>
   
-      <!-- 🔹 CENTER: Pagination controls -->
+      <!-- CENTER: Pagination controls -->
       <div class="d-flex justify-center flex-grow-1">
         <!-- Prev button -->
         <v-btn
@@ -62,7 +62,7 @@
         </v-btn>
       </div>
   
-      <!-- 🔹 RIGHT: Rows per page selector -->
+      <!-- RIGHT: Rows per page selector -->
       <div class="d-flex align-center">
         <span class="mr-2">Rows per page</span>
         <v-select
@@ -172,11 +172,6 @@
   </script>
   
   <style scoped>
-  .page-info {
-    font-size: 14px;
-    font-weight: 500;
-    color: #555;
-  }
   
   .page-number {
     font-size: 16px;

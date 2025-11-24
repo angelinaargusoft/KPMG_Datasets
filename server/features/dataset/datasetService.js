@@ -62,6 +62,10 @@ async function getAllDatasets() {
   return DatasetRepository.getAllDatasets();
 }
 
+async function getDatasetsPaginated(page = 1, pageSize = 10) {
+  return DatasetRepository.getDatasetsPaginated(page, pageSize);
+}
+
 async function getDatasetById(id) {
   return DatasetRepository.getDatasetById(id);
 }
@@ -133,6 +137,7 @@ async function deleteDataset(id) {
 module.exports = {
   createDataset,
   getAllDatasets,
+  getDatasetsPaginated,
   getDatasetById,
   getDatasetByUUID,
   updateDataset,

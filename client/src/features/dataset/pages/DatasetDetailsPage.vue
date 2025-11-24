@@ -69,26 +69,37 @@
           <v-col cols="4">{{ file.name }}</v-col>
           <v-col cols="2">{{ formatSize(file.size) }}</v-col>
           <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
-          <v-col cols="2" class="text-right">
-  <ActionIconButton
-    type="edit"
-    @click="editDataset(dataset)"
-  />
-  <ActionIconButton
-    type="manage"
-    @click="$emit('manage', dataset)"
-  />
-  <ActionIconButton
-    type="delete"
-    @click="confirmDelete(dataset)"
-  />
-</v-col>
+          <v-col :cols="3">
+            <!-- Download -->
+            <v-btn icon @click="downloadFile(file)">
+              <span class="material-symbols-outlined">
+                download
+              </span>
+            </v-btn>
 
+            <v-btn icon @click="openDeleteDialog(file)">
+              <span class="material-symbols-outlined">
+                delete
+              </span>
+            </v-btn>
+
+            <v-btn icon @click="importAsNew(file)">
+              <span class="material-symbols-outlined">
+                input
+              </span>
+            </v-btn>
+
+            <v-btn icon @click="importAndAppend(file)">
+              <span class="material-symbols-outlined">
+                add_circle
+              </span>
+            </v-btn>
+          </v-col>
         </v-row>
       </template>
     </BaseTable>
 
-    <!-- 🔥 Delete File Confirmation Dialog -->
+    <!-- Delete File Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="420">
       <v-card>
         <v-card-title class="text-h6 font-weight-medium">
@@ -119,9 +130,6 @@ const route = useRoute();
 const store = useStore();
 const datasetUUID = route.params.id;
 
-// -------------------------------
-// STATES
-// -------------------------------
 const pendingFiles = ref([]);
 const fileInput = ref(null);
 const isDragOver = ref(false);
@@ -130,22 +138,20 @@ const isDragOver = ref(false);
 const deleteDialog = ref(false);
 const selectedFile = ref(null);
 
-// Use Vuex store for files + loading
+//Vuex store for files + loading
 const blobList = computed(() => store.getters["datasetFileUpload/files"]);
 const loadingFiles = computed(() => store.getters["datasetFileUpload/loading"]);
 
-// -------------------------------
+
 // Table columns
-// -------------------------------
 const columns = [
   { label: "Name", key: "name", cols: 4 },
   { label: "Size", key: "size", cols: 2 },
   { label: "Uploaded At", key: "uploadedAt", cols: 3 },
 ];
 
-// -------------------------------
+
 // Upload all files using BACKEND via store
-// -------------------------------
 async function uploadAll() {
   for (const file of pendingFiles.value) {
     await store.dispatch("datasetFileUpload/uploadFileToDataset", {
@@ -156,25 +162,25 @@ async function uploadAll() {
   pendingFiles.value = [];
 }
 
-// -------------------------------
-// Load uploaded files (from backend via store)
-// -------------------------------
+
+// Load uploaded files
 async function loadFileList() {
   await store.dispatch("datasetFileUpload/fetchDatasetFiles", datasetUUID);
 }
 
-// -------------------------------
 // Drag & Drop + file picker
-// -------------------------------
 function onDragOver(e) {
   e.dataTransfer.dropEffect = "copy";
 }
+
 function onDragEnter() {
   isDragOver.value = true;
 }
+
 function onDragLeave() {
   isDragOver.value = false;
 }
+
 function onDrop(e) {
   isDragOver.value = false;
   addFiles(e.dataTransfer.files);
@@ -193,9 +199,8 @@ function addFiles(files) {
   for (const f of Array.from(files)) pendingFiles.value.push(f);
 }
 
-// -------------------------------
+
 // Helpers
-// -------------------------------
 function formatSize(bytes) {
   if (!bytes) return "-";
   if (bytes < 1024) return bytes + " B";
@@ -211,16 +216,15 @@ function formatDate(date) {
 // Download stub
 function downloadFile(file) {
   console.log("Download clicked for", file);
-  // e.g., window.location = `/datasets/${datasetUUID}/files/${encodeURIComponent(file.name)}`;
 }
 
-// 🔥 Open delete dialog for a specific file
+//Open delete dialog for a specific file
 function openDeleteDialog(file) {
   selectedFile.value = file;
   deleteDialog.value = true;
 }
 
-// 🔥 Confirm delete file via store (removes blob + history)
+// Confirm delete file via store (removes blob + history)
 async function confirmDeleteFile() {
   const file = selectedFile.value;
   if (!file || !file.id) {
