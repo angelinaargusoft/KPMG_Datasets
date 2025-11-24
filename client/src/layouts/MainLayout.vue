@@ -1,25 +1,17 @@
 <template>
-  <v-app>
     <!-- Navbar with Sidebar toggle -->
     <Navbar @toggle-sidebar="rail = !rail" />
 
+    <!-- Sidebar sticks to the left -->
+    <Sidebar :rail="rail" @expand-request="rail = false" />
+
+    <!-- Main scrollable content area -->
     <v-main class="main-content">
       <v-container fluid class="pa-0">
-        <v-row no-gutters>
-          <!-- Sidebar: always rendered, switches between full & rail -->
-          <Sidebar :rail="rail" @expand-request="rail = false" />
-
-          <!-- Main content -->
-          <v-col
-            :cols="12"
-            class="content-col pa-6 transition-all"
-          >
-            <router-view />
-          </v-col>
-        </v-row>
+        <!-- Whatever page is active -->
+        <router-view />
       </v-container>
     </v-main>
-  </v-app>
 </template>
 
 <script setup>

@@ -12,7 +12,7 @@ const state = () => ({
   currentDataset: null,
   loading: false,
   error: null,
-  pagination: null, 
+  pagination: null,
 });
 
 const getters = {
@@ -20,7 +20,7 @@ const getters = {
   currentDataset: (state) => state.currentDataset,
   loading: (state) => state.loading,
   error: (state) => state.error,
-  pagination: (state) => state.pagination, 
+  pagination: (state) => state.pagination,
 };
 
 const actions = {

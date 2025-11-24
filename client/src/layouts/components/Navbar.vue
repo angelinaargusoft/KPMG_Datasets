@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar color="rgb(12,35,60)" dark flat height="64" class=" d-flex align-center">
+  <v-app-bar app fixed color="rgb(12,35,60)" dark flat height="64" class=" d-flex align-center">
   <v-btn icon class="mr-4" @click="$emit('toggle-sidebar')" variant="text">
     <span class="material-symbols-outlined">menu</span>
   </v-btn>

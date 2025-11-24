@@ -1,5 +1,5 @@
 <template>
-  <v-container class="dataset-container py-8" theme="light" fluid>
+  <v-container class="py-8" theme="light" fluid>
     <v-card outlined class="elevation-1 pa-0">
       <!-- Header -->
       <div class="d-flex justify-space-between align-center px-4 py-4 flex-wrap">
@@ -112,10 +112,6 @@ const columns = [
 
 
 <style scoped>
-.dataset-container {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
 
 .search-clean {
   min-width: 140px;

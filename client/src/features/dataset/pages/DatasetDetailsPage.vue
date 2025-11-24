@@ -12,15 +12,9 @@
 
     <!-- Upload Box -->
     <v-card class="pa-6 mb-6" outlined>
-      <div
-        class="dropzone"
-        :class="{ 'dropzone--over': isDragOver }"
-        @dragover.prevent="onDragOver"
-        @dragenter.prevent="onDragEnter"
-        @dragleave.prevent="onDragLeave"
-        @drop.prevent="onDrop"
-        @click="openFilePicker"
-      >
+      <div class="dropzone" :class="{ 'dropzone--over': isDragOver }" @dragover.prevent="onDragOver"
+        @dragenter.prevent="onDragEnter" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+        @click="openFilePicker">
         <span class="material-symbols-outlined" style="font-size: 38px;">
           cloud_upload
         </span>
@@ -28,21 +22,11 @@
           <div class="text-h6">Drop files here or click to select</div>
           <div class="text--secondary">Files will be uploaded via backend</div>
         </div>
-        <input
-          ref="fileInput"
-          type="file"
-          multiple
-          class="d-none"
-          @change="onFileInputChange"
-        />
+        <input ref="fileInput" type="file" multiple class="d-none" @change="onFileInputChange" />
       </div>
 
       <div class="d-flex justify-end mt-4">
-        <v-btn
-          color="primary"
-          :disabled="!pendingFiles.length"
-          @click="uploadAll"
-        >
+        <v-btn color="primary" :disabled="!pendingFiles.length" @click="uploadAll">
           <span class="material-symbols-outlined" style="margin-right: 6px;">
             upload
           </span>
@@ -52,20 +36,10 @@
     </v-card>
 
     <!-- File list -->
-    <BaseTable
-      :columns="columns"
-      :data="blobList"
-      :loading="loadingFiles"
-      show-actions
-      empty-text="No files uploaded yet"
-      actions-cols="3"
-    >
+    <BaseTable :columns="columns" :data="blobList" :loading="loadingFiles" show-actions
+      empty-text="No files uploaded yet" actions-cols="3">
       <template #rows="{ items }">
-        <v-row
-          v-for="file in items"
-          :key="file.id || file.name"
-          class="py-3 px-4"
-        >
+        <v-row v-for="file in items" :key="file.id || file.name" class="py-3 px-4">
           <v-col cols="4">{{ file.name }}</v-col>
           <v-col cols="2">{{ formatSize(file.size) }}</v-col>
           <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
