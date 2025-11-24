@@ -1,79 +1,125 @@
 <template>
   <v-container class="py-8" fluid>
-    <!-- Back Button -->
-    <v-btn variant="text" color="primary" @click="$router.push('/admin/datasets')">
-      <span class="material-symbols-outlined" style="margin-right: 6px;">
-        arrow_back
-      </span>
-      Back to Datasets
-    </v-btn>
+    <v-card outlined class="elevation-1 pa-0">
+      <!-- HEADER -->
+      <div
+        class="d-flex justify-space-between align-center px-4 py-4 flex-wrap header-section"
+      >
+        <!-- LEFT: Dataset name + optional table prefix -->
+        <div class="d-flex flex-column">
+          <h2 class="text-h5 font-weight-bold">
+            {{ datasetName }}
+          </h2>
 
-    <h2 class="text-h5 font-weight-bold mt-4 mb-6">Dataset Details</h2>
-
-    <!-- Upload Box -->
-    <v-card class="pa-6 mb-6" outlined>
-      <div class="dropzone" :class="{ 'dropzone--over': isDragOver }" @dragover.prevent="onDragOver"
-        @dragenter.prevent="onDragEnter" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
-        @click="openFilePicker">
-        <span class="material-symbols-outlined" style="font-size: 38px;">
-          cloud_upload
-        </span>
-        <div class="dropzone-text">
-          <div class="text-h6">Drop files here or click to select</div>
-          <div class="text--secondary">Files will be uploaded via backend</div>
+          <div
+            v-if="datasetPrefix"
+            class="text-body-2  mt-1"
+          >
+            Table prefix: {{ datasetPrefix }}
+          </div>
         </div>
-        <input ref="fileInput" type="file" multiple class="d-none" @change="onFileInputChange" />
+
+        <!-- RIGHT: Back button -->
+        <v-btn
+          variant="text"
+          color="primary"
+          @click="$router.push('/admin/datasets')"
+        >
+          <span class="material-symbols-outlined" style="margin-right: 6px;">
+            arrow_back
+          </span>
+          Back to Datasets
+        </v-btn>
       </div>
 
-      <div class="d-flex justify-end mt-4">
-        <v-btn color="primary" :disabled="!pendingFiles.length" @click="uploadAll">
-          <span class="material-symbols-outlined" style="margin-right: 6px;">
-            upload
+      <v-divider />
+
+      <!-- UPLOAD SECTION -->
+      <div class="px-4 py-4">
+        <div
+          class="dropzone"
+          :class="{ 'dropzone--over': isDragOver }"
+          @dragover.prevent="onDragOver"
+          @dragenter.prevent="onDragEnter"
+          @dragleave.prevent="onDragLeave"
+          @drop.prevent="onDrop"
+          @click="openFilePicker"
+        >
+          <div class="dropzone-text">
+            <span class="material-symbols-outlined" style="font-size: 38px;">
+            cloud_upload
           </span>
-          Upload Files
-        </v-btn>
+            <div class="text-h6">
+              Drop files here or click to select
+            </div>
+          </div>
+          <input
+            ref="fileInput"
+            type="file"
+            multiple
+            class="d-none"
+            @change="onFileInputChange"
+          />
+        </div>
+
+        <div class="d-flex justify-end mt-4">
+          <v-btn color="primary" :disabled="!pendingFiles.length" @click="uploadAll">
+            <span class="material-symbols-outlined" style="margin-right: 6px;">
+              upload
+            </span>
+            Upload Files
+          </v-btn>
+        </div>
+      </div>
+
+      <v-divider />
+
+      <!-- FILES SECTION -->
+      <div class="px-4 py-4">
+        <div
+          class="d-flex justify-end align-center mb-2 flex-wrap"
+          style="gap: 12px;"
+        >
+          <v-text-field
+            v-model="fileSearchQuery"
+            placeholder="Search files"
+            density="compact"
+            variant="outlined"
+            class="file-search"
+            hide-details
+          >
+            <template #prepend-inner>
+              <span class="material-symbols-outlined search-icon">
+                search
+              </span>
+            </template>
+          </v-text-field>
+        </div>
+
+        <BaseTable
+          :columns="columns"
+          :data="filteredFiles"
+          :loading="loadingFiles"
+          show-actions
+          empty-text="No files uploaded yet"
+          :actions-cols="3"
+        >
+          <template #rows="{ items }">
+            <FileRow
+              v-for="file in items"
+              :key="file.id || file.name"
+              :file="file"
+              @download="downloadFile"
+              @delete="openDeleteDialog"
+              @import-new="importAsNew"
+              @import-append="importAndAppend"
+            />
+          </template>
+        </BaseTable>
       </div>
     </v-card>
 
-    <!-- File list -->
-    <BaseTable :columns="columns" :data="blobList" :loading="loadingFiles" show-actions
-      empty-text="No files uploaded yet" actions-cols="3">
-      <template #rows="{ items }">
-        <v-row v-for="file in items" :key="file.id || file.name" class="py-3 px-4">
-          <v-col cols="4">{{ file.name }}</v-col>
-          <v-col cols="2">{{ formatSize(file.size) }}</v-col>
-          <v-col cols="3">{{ formatDate(file.uploadedAt) }}</v-col>
-          <v-col :cols="3">
-            <!-- Download -->
-            <v-btn icon @click="downloadFile(file)">
-              <span class="material-symbols-outlined">
-                download
-              </span>
-            </v-btn>
-
-            <v-btn icon @click="openDeleteDialog(file)">
-              <span class="material-symbols-outlined">
-                delete
-              </span>
-            </v-btn>
-
-            <v-btn icon @click="importAsNew(file)">
-              <span class="material-symbols-outlined">
-                input
-              </span>
-            </v-btn>
-
-            <v-btn icon @click="importAndAppend(file)">
-              <span class="material-symbols-outlined">
-                add_circle
-              </span>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </template>
-    </BaseTable>
-
-    <!-- Delete File Confirmation Dialog -->
+    <!-- DELETE FILE CONFIRMATION DIALOG -->
     <v-dialog v-model="deleteDialog" max-width="420">
       <v-card>
         <v-card-title class="text-h6 font-weight-medium">
@@ -93,17 +139,18 @@
   </v-container>
 </template>
 
-
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 import BaseTable from "@/components/common/BaseTable.vue";
+import FileRow from "../components/FileRow.vue";
 
 const route = useRoute();
 const store = useStore();
 const datasetUUID = route.params.id;
 
+// upload state
 const pendingFiles = ref([]);
 const fileInput = ref(null);
 const isDragOver = ref(false);
@@ -112,20 +159,59 @@ const isDragOver = ref(false);
 const deleteDialog = ref(false);
 const selectedFile = ref(null);
 
-//Vuex store for files + loading
-const blobList = computed(() => store.getters["datasetFileUpload/files"]);
-const loadingFiles = computed(() => store.getters["datasetFileUpload/loading"]);
+// search state for files
+const fileSearchQuery = ref("");
 
+// ---- DATASET HEADER (from dataset store) ----
+const currentDataset = computed(
+  () => store.getters["dataset/currentDataset"] || {}
+);
+
+const datasetName = computed(
+  () => currentDataset.value.name || "Dataset"
+);
+
+// pick tablePrefix if available, fall back to prefix
+const datasetPrefix = computed(() => {
+  const prefix =
+    currentDataset.value.tablePrefix ?? currentDataset.value.prefix;
+
+  if (!prefix) return null;
+  const trimmed = String(prefix).trim();
+  return trimmed ? trimmed : null;
+});
+
+// ---- FILE LIST (from datasetFileUpload store) ----
+const blobList = computed(
+  () => store.getters["datasetFileUpload/files"] || []
+);
+const loadingFiles = computed(
+  () => store.getters["datasetFileUpload/loading"]
+);
+
+// Filtered files (client-side search)
+const filteredFiles = computed(() => {
+  if (!fileSearchQuery.value) return blobList.value;
+
+  const q = fileSearchQuery.value.toLowerCase();
+
+  return blobList.value.filter((f) =>
+    [f.name, f.size, f.uploadedAt]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(q)
+  );
+});
 
 // Table columns
 const columns = [
-  { label: "Name", key: "name", cols: 4 },
-  { label: "Size", key: "size", cols: 2 },
-  { label: "Uploaded At", key: "uploadedAt", cols: 3 },
+  { label: "Name", key: "name", cols: 4, sortable: true },
+  { label: "Size", key: "size", cols: 2, sortable: true },
+  { label: "Uploaded At", key: "uploadedAt", cols: 3, sortable: true },
 ];
 
-
-// Upload all files using BACKEND via store
+// Upload all files via backend
 async function uploadAll() {
   for (const file of pendingFiles.value) {
     await store.dispatch("datasetFileUpload/uploadFileToDataset", {
@@ -136,13 +222,12 @@ async function uploadAll() {
   pendingFiles.value = [];
 }
 
-
 // Load uploaded files
 async function loadFileList() {
   await store.dispatch("datasetFileUpload/fetchDatasetFiles", datasetUUID);
 }
 
-// Drag & Drop + file picker
+// Drag & Drop + file picker handlers
 function onDragOver(e) {
   e.dataTransfer.dropEffect = "copy";
 }
@@ -170,21 +255,9 @@ function onFileInputChange(e) {
 }
 
 function addFiles(files) {
-  for (const f of Array.from(files)) pendingFiles.value.push(f);
-}
-
-
-// Helpers
-function formatSize(bytes) {
-  if (!bytes) return "-";
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
-
-function formatDate(date) {
-  if (!date) return "-";
-  return new Date(date).toLocaleString();
+  for (const f of Array.from(files)) {
+    pendingFiles.value.push(f);
+  }
 }
 
 // Download stub
@@ -192,13 +265,13 @@ function downloadFile(file) {
   console.log("Download clicked for", file);
 }
 
-//Open delete dialog for a specific file
+// Open delete dialog for a specific file
 function openDeleteDialog(file) {
   selectedFile.value = file;
   deleteDialog.value = true;
 }
 
-// Confirm delete file via store (removes blob + history)
+// Confirm delete file via store
 async function confirmDeleteFile() {
   const file = selectedFile.value;
   if (!file || !file.id) {
@@ -225,14 +298,19 @@ function importAndAppend(file) {
   console.log("Import & APPEND", file);
 }
 
-// Load list initially
-onMounted(loadFileList);
+// Initial load: dataset header + file list
+onMounted(async () => {
+  await Promise.all([
+    store.dispatch("dataset/fetchDatasetByUUID", datasetUUID),
+    loadFileList(),
+  ]);
+});
 </script>
 
 <style scoped>
 .dropzone {
   min-height: 150px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed #2196f3;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -241,6 +319,11 @@ onMounted(loadFileList);
   padding: 24px;
   cursor: pointer;
   transition: 0.2s;
+}
+
+.dropzone:hover{
+  border-style: solid;
+  background-color: #f8f9fb;
 }
 
 .dropzone--over {
@@ -252,4 +335,15 @@ onMounted(loadFileList);
   text-align: center;
   max-width: 60%;
 }
+
+.file-search {
+  min-width: 140px;
+  max-width: 260px;
+}
+
+.file-search .v-field {
+  border-radius: 8px !important;
+}
 </style>
+
+

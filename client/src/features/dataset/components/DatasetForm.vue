@@ -131,7 +131,7 @@ const props = defineProps({
       name: "",
       description: "",
       applicationPackageId: "",
-      storageType: "SFTP",
+      storageType: "",
       enablev3: false,
       tablePrefix: "",
       endpointServerUUID: "",
