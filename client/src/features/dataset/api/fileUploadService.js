@@ -2,7 +2,6 @@ import api from "@/plugins/axios";
 
 // Upload file to a dataset (by UUID)
 export const uploadDatasetFile = async (uuid, file) => {
-  console.log(uuid)
   const formData = new FormData();
   formData.append("file", file);
 
@@ -15,13 +14,21 @@ export const uploadDatasetFile = async (uuid, file) => {
   return res.data;
 };
 
-export const getDatasetFiles = async (uuid) => {
-  const res = await api.get(`/datasets/${uuid}/files`);
-  // adjust if your backend returns { files: [...] }
-  return res.data.files || res.data;
+// Get dataset files (paginated)
+export const getDatasetFiles = async (uuid, { page = 1, pageSize = 10 } = {}) => {
+  const res = await api.get(`/datasets/${uuid}/files`, {
+    params: { page, pageSize },
+  });
+
+  // backend returns: { files: [...], pagination: {...} }
+  return {
+    files: res.data.files || [],
+    pagination: res.data.pagination || null,
+  };
 };
 
-export const deleteDatasetFile = async (id) => {
-  const res = await api.delete(`/datasets/uploads/${id}`);
+// Delete dataset file by upload UUID
+export const deleteDatasetFile = async (datasetUUID, uploadUUID) => {
+  const res = await api.delete(`/datasets/${datasetUUID}/files/${uploadUUID}`);
   return res.data;
 };

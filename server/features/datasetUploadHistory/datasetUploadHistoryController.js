@@ -28,27 +28,37 @@ async function uploadDatasetFile(req, res, next) {
   }
 }
 
-// List uploaded files for a dataset
+// List uploaded files for a dataset (paginated)
 async function getDatasetFiles(req, res, next) {
   try {
     const datasetUUID = req.params.uuid;
+    const { page = 1, pageSize = 10 } = req.query;
 
-    const files = await DatasetUploadService.getFilesForDataset(datasetUUID);
+    const { data, pagination } =
+      await DatasetUploadService.getFilesForDataset(
+        datasetUUID,
+        Number(page),
+        Number(pageSize)
+      );
 
-    res.json({ files });
+    res.json({
+      files: data,
+      pagination,
+    });
   } catch (err) {
     next(err);
   }
 }
 
-// 🔥 NEW: delete an uploaded file (blob + history record)
+// 🔥 Delete an uploaded file (blob + history record) by upload UUID
 async function deleteDatasetFile(req, res, next) {
   try {
-    const { id } = req.params; // this is the upload history record ID
+    // route should be something like: DELETE /datasets/:uuid/files/:uploadUUID
+    const { uploadUUID } = req.params;
 
-    const result = await DatasetUploadService.deleteUploadedFile(id);
+    const result = await DatasetUploadService.deleteUploadedFile(uploadUUID);
 
-    res.json(result); // e.g. { message: "File and upload record deleted successfully" }
+    res.json(result); // { message: "File and upload record deleted successfully" }
   } catch (err) {
     next(err);
   }

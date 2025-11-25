@@ -1,6 +1,17 @@
 <template>
   <v-container class="py-8" fluid>
+    <!-- TOP TABS -->
     <v-card outlined class="elevation-1 pa-0">
+      <v-tabs
+        v-model="activeTab"
+        density="comfortable"
+        class="mb-4"
+      >
+        <v-tab value="files">Files</v-tab>
+        <v-tab value="tables">Tables</v-tab>
+        <v-tab value="history">History</v-tab>
+      </v-tabs>
+
       <!-- HEADER -->
       <div
         class="d-flex justify-space-between align-center px-4 py-4 flex-wrap header-section"
@@ -13,7 +24,7 @@
 
           <div
             v-if="datasetPrefix"
-            class="text-body-2  mt-1"
+            class="text-body-2 mt-1"
           >
             Table prefix: {{ datasetPrefix }}
           </div>
@@ -47,8 +58,8 @@
         >
           <div class="dropzone-text">
             <span class="material-symbols-outlined" style="font-size: 38px;">
-            cloud_upload
-          </span>
+              cloud_upload
+            </span>
             <div class="text-h6">
               Drop files here or click to select
             </div>
@@ -103,11 +114,17 @@
           show-actions
           empty-text="No files uploaded yet"
           :actions-cols="3"
+          :server-pagination="true"
+          :page="filesPage"
+          :items-per-page="filesItemsPerPage"
+          :total-items="filesTotalItems"
+          @update:page="handleFilesPageChange"
+          @update:itemsPerPage="handleFilesItemsPerPageChange"
         >
           <template #rows="{ items }">
             <FileRow
               v-for="file in items"
-              :key="file.id || file.name"
+              :key="file.uuid || file.name"
               :file="file"
               @download="downloadFile"
               @delete="openDeleteDialog"
@@ -140,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 import BaseTable from "@/components/common/BaseTable.vue";
@@ -148,7 +165,11 @@ import FileRow from "../components/FileRow.vue";
 
 const route = useRoute();
 const store = useStore();
+
+// In your router this param is named :id, but its value is the dataset UUID
 const datasetUUID = route.params.id;
+
+const activeTab = ref("files");
 
 // upload state
 const pendingFiles = ref([]);
@@ -161,6 +182,30 @@ const selectedFile = ref(null);
 
 // search state for files
 const fileSearchQuery = ref("");
+
+// ---- PAGINATION STATE FOR FILES ----
+const filesPage = ref(1);
+const filesItemsPerPage = ref(10);
+
+const filesPagination = computed(
+  () => store.getters["datasetFileUpload/pagination"] || null
+);
+
+// keep local page + itemsPerPage in sync with store pagination
+watch(
+  filesPagination,
+  (val) => {
+    if (!val) return;
+    filesPage.value = val.page || 1;
+    filesItemsPerPage.value = val.pageSize || 10;
+  },
+  { immediate: true }
+);
+
+// total items for pagination control
+const filesTotalItems = computed(
+  () => filesPagination.value?.totalItems || 0
+);
 
 // ---- DATASET HEADER (from dataset store) ----
 const currentDataset = computed(
@@ -189,7 +234,7 @@ const loadingFiles = computed(
   () => store.getters["datasetFileUpload/loading"]
 );
 
-// Filtered files (client-side search)
+// Filtered files (client-side search on the current page)
 const filteredFiles = computed(() => {
   if (!fileSearchQuery.value) return blobList.value;
 
@@ -222,9 +267,26 @@ async function uploadAll() {
   pendingFiles.value = [];
 }
 
-// Load uploaded files
-async function loadFileList() {
-  await store.dispatch("datasetFileUpload/fetchDatasetFiles", datasetUUID);
+// Load uploaded files for a page
+async function loadFileList(page = filesPage.value, pageSize = filesItemsPerPage.value) {
+  await store.dispatch("datasetFileUpload/fetchDatasetFiles", {
+    datasetUUID,
+    page,
+    pageSize,
+  });
+}
+
+// Handlers for table pagination events
+async function handleFilesPageChange(newPage) {
+  filesPage.value = newPage;
+  await loadFileList(newPage, filesItemsPerPage.value);
+}
+
+async function handleFilesItemsPerPageChange(newItemsPerPage) {
+  filesItemsPerPage.value = newItemsPerPage;
+  // reset to first page on page-size change
+  filesPage.value = 1;
+  await loadFileList(1, newItemsPerPage);
 }
 
 // Drag & Drop + file picker handlers
@@ -274,14 +336,14 @@ function openDeleteDialog(file) {
 // Confirm delete file via store
 async function confirmDeleteFile() {
   const file = selectedFile.value;
-  if (!file || !file.id) {
-    console.warn("Cannot delete file: missing id", file);
+  if (!file || !file.uuid) {
+    console.warn("Cannot delete file: missing uuid", file);
     deleteDialog.value = false;
     return;
   }
 
   await store.dispatch("datasetFileUpload/removeDatasetFile", {
-    recordId: file.id,
+    uploadUUID: file.uuid,
     datasetUUID,
   });
 
@@ -298,11 +360,11 @@ function importAndAppend(file) {
   console.log("Import & APPEND", file);
 }
 
-// Initial load: dataset header + file list
+// Initial load: dataset header + first page of files
 onMounted(async () => {
   await Promise.all([
     store.dispatch("dataset/fetchDatasetByUUID", datasetUUID),
-    loadFileList(),
+    loadFileList(1, filesItemsPerPage.value),
   ]);
 });
 </script>
