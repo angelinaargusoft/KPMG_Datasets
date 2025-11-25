@@ -35,24 +35,28 @@
     </v-row>
 
     <!-- Body -->
-    <slot name="rows" :items="sortedItems" :columns="columns" />
+<slot name="rows" :items="sortedItems" :columns="columns" />
 
-    <BaseTablePagination
-      v-if="serverPagination"
-      :page="page"
-      :items-per-page="itemsPerPage"
-      :total-items="totalItems"
-      @update:page="emit('update:page', $event)"
-      @update:items-per-page="emit('update:itemsPerPage', $event)"
-    />
+<!-- Only hide rows — NOT pagination -->
+<div v-if="!loading && !hasData" class="text-center py-8 text-grey">
+  {{ emptyText }}
+  <v-divider />
+</div>
 
-    <div v-if="!loading && !hasData" class="text-center py-8 text-grey">
-      {{ emptyText }}
-    </div>
+<!-- Always show pagination when serverPagination=true -->
+<BaseTablePagination
+  v-if="serverPagination"
+  :page="page"
+  :items-per-page="itemsPerPage"
+  :total-items="totalItems"
+  @update:page="emit('update:page', $event)"
+  @update:items-per-page="emit('update:itemsPerPage', $event)"
+/>
 
-    <div v-if="loading" class="text-center py-8">
-      <v-progress-circular indeterminate />
-    </div>
+<div v-if="loading" class="text-center py-8">
+  <v-progress-circular indeterminate />
+</div>
+
   </component>
 </template>
 

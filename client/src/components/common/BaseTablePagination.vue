@@ -1,7 +1,6 @@
 <template>
     <!-- Pagination + info + rows-per-page -->
     <div
-  v-if="totalItems > 0"
   class="d-flex align-center px-4 py-4"
 >
       <!-- LEFT: Page & records info -->
