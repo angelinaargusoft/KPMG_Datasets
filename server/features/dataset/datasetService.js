@@ -1,12 +1,68 @@
 const { v4: uuidv4 } = require("uuid");
 const DatasetRepository = require("./datasetRepository");
-const DataEndpointService = require("../dataEndpoint/dataEndpointService");  // <-- added
+const EndpointServerService = require("../endpointServer/endpointServerService")
 const { createContainerIfNotExists, deleteContainer } = require("./blobStorageService");
 
+const { SecretClient } = require("@azure/keyvault-secrets");
+const { ClientSecretCredential } = require("@azure/identity");
+
+const credential = new ClientSecretCredential(
+  process.env.AZURE_TENANT_ID,
+  process.env.AZURE_CLIENT_ID,
+  process.env.AZURE_CLIENT_SECRET
+);
+
+function extractStorageAccountName(resourceId) {
+  if (!resourceId) return null;
+  const parts = resourceId.split("/").filter(Boolean);
+  // last segment after "storageAccounts/"
+  return parts[parts.length - 1] || null;
+}
+
+async function getSecretValueFromKeyVault(secretUri) {
+  if (!secretUri) return null;
+
+  const url = new URL(secretUri);
+  const segments = url.pathname.split("/").filter(Boolean);
+  // ["secrets", "<name>", "<version>"]
+  const secretName = segments[1];
+  const version = segments[2];
+  const vaultUrl = `${url.protocol}//${url.host}`;
+
+  const client = new SecretClient(vaultUrl, credential);
+  const secret = await client.getSecret(secretName, version);
+  return secret.value;
+}
+
+async function buildBlobConnectionStringFromEndpoint(endpoint) {
+  if (!endpoint) throw new Error("Endpoint is required to build connection string");
+  if (endpoint.type !== "blob") {
+    throw new Error("Endpoint type must be 'blob' to build blob connection string");
+  }
+
+  const accountName = extractStorageAccountName(endpoint.hostname);
+  if (!accountName) {
+    throw new Error("Invalid endpoint hostname/resourceId: cannot extract storage account name");
+  }
+
+  // Add fallback to key2 later
+  const accountKey = await getSecretValueFromKeyVault(endpoint.key1);
+  if (!accountKey) {
+    throw new Error("Could not resolve account key from Key Vault (key1)");
+  }
+
+  return (
+    "DefaultEndpointsProtocol=https;" +
+    `AccountName=${accountName};` +
+    `AccountKey=${accountKey};` +
+    "EndpointSuffix=core.windows.net"
+  );
+}
+
 async function ensureEndpointExists(endpointUUID) {
-  if (!endpointUUID) return; 
-  
-  const endpoint = await DataEndpointService.getDataEndpointByUUID(endpointUUID);
+  if (!endpointUUID) return;
+
+  const endpoint = await EndpointServerService.getEndpointServerByUUID(endpointUUID);
   if (!endpoint) {
     throw new Error(`DataEndpoint with UUID ${endpointUUID} does not exist`);
   }
@@ -23,7 +79,7 @@ async function createDataset(data) {
   let endpoint = null;
 
   if (data.endpointServerUUID) {
-    endpoint = await DataEndpointService.getDataEndpointByUUID(
+    endpoint = await EndpointServerService.getEndpointServerByUUID(
       data.endpointServerUUID
     );
 
@@ -46,9 +102,13 @@ async function createDataset(data) {
 
   const createdDataset = await DatasetRepository.createDataset(newDataset);
 
+  // If Blob + endpoint provided - create container
   if (createdDataset.storageType === "Blob" && endpoint) {
     try {
-      await createContainerIfNotExists(endpoint.hostname, createdDataset.uuid);
+      const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
+      const containerName = createdDataset.uuid.toLowerCase();
+
+      await createContainerIfNotExists(connectionString, containerName);
     } catch (err) {
       console.error("Blob creation error:", err);
       throw new Error("Failed to provision blob container for dataset");
@@ -93,23 +153,17 @@ async function updateDataset(id, data) {
     throw new Error("No valid fields to update");
   }
 
-  // 👉 SIMPLE: ensure endpoint exists before updating
-  if (cleanUpdates.endpointServerUUID) {
-    await ensureEndpointExists(cleanUpdates.endpointServerUUID);
-  }
-
   const updatedDataset = await DatasetRepository.updateDataset(id, cleanUpdates);
   return updatedDataset;
 }
 
 async function deleteDataset(id) {
-  // 1. Load dataset first (before deleting DB record)
   const dataset = await DatasetRepository.getDatasetById(id);
   if (!dataset) throw new Error("Dataset not found");
 
-  // 2. If Blob → delete Azure container
+  //If Blob - delete Azure container
   if (dataset.storageType === "Blob" && dataset.endpointServerUUID) {
-    const endpoint = await DataEndpointService.getDataEndpointByUUID(
+    const endpoint = await EndpointServerService.getEndpointServerByUUID(
       dataset.endpointServerUUID
     );
 
@@ -117,7 +171,7 @@ async function deleteDataset(id) {
       console.warn("Dataset endpoint not found — skipping container deletion.");
     } else {
       try {
-        const connectionString = endpoint.hostname; // adjust if column differs
+        const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
         const containerName = dataset.uuid.toLowerCase();
 
         await deleteContainer(connectionString, containerName);
@@ -129,7 +183,7 @@ async function deleteDataset(id) {
     }
   }
 
-  // 3. Delete dataset from database
+  //Delete dataset from database
   const deletedDataset = await DatasetRepository.deleteDataset(id);
   return deletedDataset;
 }
@@ -142,7 +196,9 @@ module.exports = {
   getDatasetByUUID,
   updateDataset,
   deleteDataset,
+  buildBlobConnectionStringFromEndpoint
 };
+
 
 
 

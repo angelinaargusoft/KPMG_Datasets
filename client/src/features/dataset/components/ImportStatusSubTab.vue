@@ -115,7 +115,6 @@
   // filter state for status
   const statusFilter = ref("all");
   
-  // TODO: wire this to your real store getter when ready
   // Expect rows shaped like:
   // { uuid, status, name, size, importedAt, progress }
   const importStatusList = computed(

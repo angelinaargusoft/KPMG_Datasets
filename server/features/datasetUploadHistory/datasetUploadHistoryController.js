@@ -1,8 +1,6 @@
-// datasetUploadController.js
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Make sure this matches the actual file: datasetUploadService.js
 const DatasetUploadService = require("./datasetUploadHistoryService");
 
 async function uploadDatasetFile(req, res, next) {
@@ -28,7 +26,6 @@ async function uploadDatasetFile(req, res, next) {
   }
 }
 
-// List uploaded files for a dataset (paginated)
 async function getDatasetFiles(req, res, next) {
   try {
     const datasetUUID = req.params.uuid;
@@ -50,15 +47,13 @@ async function getDatasetFiles(req, res, next) {
   }
 }
 
-// 🔥 Delete an uploaded file (blob + history record) by upload UUID
+
 async function deleteDatasetFile(req, res, next) {
   try {
-    // route should be something like: DELETE /datasets/:uuid/files/:uploadUUID
     const { uploadUUID } = req.params;
-
     const result = await DatasetUploadService.deleteUploadedFile(uploadUUID);
 
-    res.json(result); // { message: "File and upload record deleted successfully" }
+    res.json(result); 
   } catch (err) {
     next(err);
   }

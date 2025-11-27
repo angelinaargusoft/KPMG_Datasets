@@ -1,14 +1,17 @@
-// datasetUploadService.js
 const DatasetService = require("../dataset/datasetService");
-const DataEndpointService = require("../dataEndpoint/dataEndpointService");
+const EndpointServerService = require("../endpointServer/endpointServerService");
 const {
   uploadBufferToContainer,
   deleteBlobFromContainer,
 } = require("../dataset/blobStorageService");
 const DatasetUploadHistoryRepository = require("./datasetUploadHistoryRepository");
 
+const {
+  buildBlobConnectionStringFromEndpoint,
+} = require("../dataset/datasetService");
+
 async function uploadFileForDataset(datasetUUID, file) {
-  // 1. Load dataset
+  //Load dataset
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) {
     throw new Error(`Dataset with UUID ${datasetUUID} not found`);
@@ -18,30 +21,26 @@ async function uploadFileForDataset(datasetUUID, file) {
     throw new Error("This dataset is not configured for Blob storage");
   }
 
-  // 2. Load endpoint & get connection string
+  //Load endpoint
   if (!dataset.endpointServerUUID) {
     throw new Error("Dataset has no endpointServerUUID configured");
   }
 
-  const endpoint = await DataEndpointService.getDataEndpointByUUID(
+  const endpoint = await EndpointServerService.getEndpointServerByUUID(
     dataset.endpointServerUUID
   );
 
   if (!endpoint) {
     throw new Error(
-      `DataEndpoint with UUID ${dataset.endpointServerUUID} not found`
+      `Endpoint with UUID ${dataset.endpointServerUUID} not found`
     );
   }
 
-  // You should have connection details in the endpoint (e.g. endpoint.connectionString)
-  const connectionString = endpoint.hostname; // adapt to your actual column
-  if (!connectionString) {
-    throw new Error("Endpoint has no connection string configured");
-  }
+  const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
 
-  // 3. Upload to container named after dataset UUID
+  //Upload to container named after dataset UUID
   const containerName = dataset.uuid.toLowerCase();
-  const blobName = file.originalname; // or add timestamp / UUID if you want uniqueness
+  const blobName = file.originalname; 
 
   const uploadResult = await uploadBufferToContainer(
     connectionString,
@@ -51,7 +50,7 @@ async function uploadFileForDataset(datasetUUID, file) {
     file.mimetype
   );
 
-  // 4. Log in datasetUploadHistory
+  // Log in datasetUploadHistory
   await DatasetUploadHistoryRepository.logDatasetUpload({
     datasetUUID: dataset.uuid,
     endpointUUID: endpoint.uuid,
@@ -68,15 +67,12 @@ async function uploadFileForDataset(datasetUUID, file) {
   };
 }
 
-// Get paginated list of uploaded files for a dataset (for your frontend table)
 async function getFilesForDataset(datasetUUID, page = 1, pageSize = 10) {
-  // Optional: ensure dataset exists (nice for 404 handling)
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) {
     throw new Error(`Dataset with UUID ${datasetUUID} not found`);
   }
 
-  // Read from upload history (already returns { data, pagination })
   const uploadsPage =
     await DatasetUploadHistoryRepository.getUploadsByDatasetUUIDPaginated(
       datasetUUID,
@@ -87,36 +83,44 @@ async function getFilesForDataset(datasetUUID, page = 1, pageSize = 10) {
   return uploadsPage;
 }
 
-// Delete uploaded file by its upload UUID (not numeric id)
 async function deleteUploadedFile(uploadUUID) {
-  // 1. Load upload entry
+  //Load upload entry
   const upload = await DatasetUploadHistoryRepository.getUploadByUUID(uploadUUID);
   if (!upload) {
     throw new Error(`Upload record with UUID ${uploadUUID} not found`);
   }
 
-  const { name: blobName, endpointUUID, datasetUUID } = upload;
+  const blobName =
+    upload.filename || upload.name;
 
-  // 2. Load dataset
+  const { endpointUUID, datasetUUID } = upload;
+
+  if (!blobName) {
+    throw new Error("Upload record is missing blob name/filename");
+  }
+
+  //Load dataset
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) throw new Error("Dataset not found");
 
   const containerName = dataset.uuid.toLowerCase();
 
-  // 3. Load endpoint
-  const endpoint = await DataEndpointService.getDataEndpointByUUID(endpointUUID);
+  //Load endpoint
+  const endpoint = await EndpointServerService.getEndpointServerByUUID(endpointUUID);
   if (!endpoint) throw new Error("Endpoint not found");
 
-  const connectionString = endpoint.hostname; // Adjust to your actual column
+  const { buildBlobConnectionStringFromEndpoint } = require("../dataset/datasetService");
+  const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
 
-  // 4. Delete blob
+  //Delete blob
   await deleteBlobFromContainer(connectionString, containerName, blobName);
 
-  // 5. Delete DB record
+  //Delete DB record
   await DatasetUploadHistoryRepository.deleteUpload(uploadUUID);
 
   return { message: "File and upload record deleted successfully" };
 }
+
 
 module.exports = {
   uploadFileForDataset,

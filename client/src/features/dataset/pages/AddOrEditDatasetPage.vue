@@ -28,7 +28,7 @@
       <DatasetForm
         v-model="localDataset"
         :isEdit="isEdit"
-        :endpoints="dataEndpoints"
+        :endpoints="endpointServers"
         @valid="formValid = $event"
       />
 
@@ -72,11 +72,11 @@ const store = useStore();
 const loading = computed(() => store.getters["dataset/loading"]);
 const error = computed(() => store.getters["dataset/error"]);
 
-const formValid = ref(false);
-
-const dataEndpoints = computed(
-  () => store.getters["dataEndpoint/dataEndpoints"] || []
+const endpointServers = computed(
+  () => store.getters["endpointServers/endpointServers"] || []
 );
+
+const formValid = ref(false);
 
 // Local reactive dataset object (v-model)
 const localDataset = ref({
@@ -93,12 +93,13 @@ const isEdit = ref(false);
 // Load existing profile
 onMounted(async () => {
   try {
-    await store.dispatch("dataEndpoint/fetchDataEndpoints");
+    // 🔹 updated module/action name
+    await store.dispatch("endpointServers/fetchEndpointServers");
   } catch (err) {
-    console.error("Error fetching data endpoints:", err);
+    console.error("Error fetching endpoint servers:", err);
   }
 
-  const datasetUuid = route.params.id;
+  const datasetUuid = route.params.id; // treated as UUID
   if (datasetUuid) {
     try {
       const existing = await store.dispatch(
@@ -125,7 +126,6 @@ onMounted(async () => {
 
 // Handle form submission
 const handleSubmit = async () => {
-  // don't submit if form is invalid
   if (!formValid.value) return;
 
   const payload = {
@@ -134,6 +134,7 @@ const handleSubmit = async () => {
     createdBy: "123e4567-e89b-12d3-a456-426614174000",
   };
 
+  // passing route.params.id through as datasetId (UUID)
   const ok = await store.dispatch("dataset/saveDataset", {
     datasetId: route.params.id,
     dataset: payload,
@@ -153,7 +154,8 @@ const handleSubmit = async () => {
 .form-box {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 0; 
+  border-radius: 0;
 }
 </style>
+
 

@@ -100,9 +100,8 @@ async function getDatasetByUUID(uuid) {
   return rows[0] || null;
 }
 
-async function updateDataset(id, data) {
-  console.log(id);
-  const existingDataset = await getDatasetByUUID(id);
+async function updateDataset(uuid, data) {
+  const existingDataset = await getDatasetByUUID(uuid);
   if (!existingDataset) throw new Error("Dataset not found");
 
   const fields = [];
@@ -121,10 +120,10 @@ async function updateDataset(id, data) {
     WHERE uuid = ?
   `;
 
-  values.push(id);
+  values.push(uuid);
   await pool.execute(query, values);
 
-  return await getDatasetById(id);
+  return await getDatasetByUUID(uuid);
 }
 
 async function deleteDataset(id) {

@@ -47,7 +47,6 @@ async function getDatasetByUUID(req, res, next) {
 async function updateDataset(req, res, next) {
   try {
     const updated = await DatasetService.updateDataset(req.params.id, req.body);
-    console.log(updated);
     res.json({ message: "Dataset updated", updated });
   } catch (err) {
     next(err);

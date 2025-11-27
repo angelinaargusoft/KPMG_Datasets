@@ -1,8 +1,6 @@
-// datasetUploadHistoryRepository.js
 const { v4: uuidv4 } = require("uuid");
 const pool = require("../../config/database");
 
-// Log a single upload event
 async function logDatasetUpload({ datasetUUID, endpointUUID, filename, fileSize }) {
   const uuid = uuidv4();
 
@@ -20,19 +18,17 @@ async function logDatasetUpload({ datasetUUID, endpointUUID, filename, fileSize 
     fileSize != null ? String(fileSize) : null,
   ];
 
-  const [result] = await pool.execute(query, params);
-  // we only expose the UUID outward, not the numeric id
+  await pool.execute(query, params);
   return { uuid };
 }
 
-// ✅ Paginated uploads for a given dataset UUID (page/pageSize style)
 async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize = 10) {
   // normalize pagination input
   const limit = Math.max(parseInt(pageSize, 10) || 10, 1);
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  // 1) total count for this dataset
+  // total count for this dataset
   const [countRows] = await pool.execute(
     `
       SELECT COUNT(*) AS total
@@ -45,7 +41,7 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
   const totalItems = countRows[0]?.total || 0;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / limit);
 
-  // 2) fetch a page of data
+  // fetch a page of data
   const query = `
     SELECT
       uuid,
@@ -82,7 +78,6 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
   };
 }
 
-// 🔍 Get a single upload record by its UUID (no numeric id)
 async function getUploadByUUID(uploadUUID) {
   const query = `
     SELECT
@@ -111,7 +106,6 @@ async function getUploadByUUID(uploadUUID) {
   };
 }
 
-// 🗑️ Delete a single upload record by its UUID
 async function deleteUpload(uploadUUID) {
   const query = `
     DELETE FROM datasetUploadHistory
