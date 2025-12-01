@@ -5,26 +5,9 @@ import {
   createDataset,
   updateDataset,
   deleteDataset,
-} from "@/features/dataset/api/datasetService";
-
-const state = () => ({
-  datasets: [],
-  currentDataset: null,
-  loading: false,
-  error: null,
-  pagination: null,
-});
-
-const getters = {
-  datasets: (state) => state.datasets,
-  currentDataset: (state) => state.currentDataset,
-  loading: (state) => state.loading,
-  error: (state) => state.error,
-  pagination: (state) => state.pagination,
-};
+} from "../list/services/datasetService";
 
 const actions = {
-
   async fetchDatasets({ commit }, { page = 1, pageSize = 10 } = {}) {
     commit("setLoading", true);
     commit("setError", null);
@@ -119,28 +102,4 @@ const actions = {
   },
 };
 
-const mutations = {
-  setDatasets(state, datasets) {
-    state.datasets = datasets;
-  },
-  setCurrentDataset(state, dataset) {
-    state.currentDataset = dataset;
-  },
-  setLoading(state, val) {
-    state.loading = val;
-  },
-  setError(state, err) {
-    state.error = err;
-  },
-  setPagination(state, pagination) {
-    state.pagination = pagination;
-  },
-};
-
-export default {
-  namespaced: true,
-  state,
-  getters,
-  actions,
-  mutations,
-};
+export default actions;

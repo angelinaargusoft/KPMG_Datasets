@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-const DatasetPage = () => import("@/features/dataset/pages/DatasetPage.vue");
-const AddOrEditDatasetPage = () => import("@/features/dataset/pages/AddOrEditDatasetPage.vue");
-const DatasetDetailsPage = () => import('@/features/dataset/pages/DatasetDetailsPage.vue');
+const DatasetPage = () => import("@/features/dataset/list/DatasetPage.vue");
+const AddOrEditDatasetPage = () => import("@/features/dataset/edit/AddOrEditDatasetPage.vue");
+const DatasetDetailsPage = () => import('@/features/dataset/details/DatasetDetailsPage.vue');
 
 const routes = [
   {

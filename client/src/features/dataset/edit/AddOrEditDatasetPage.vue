@@ -62,7 +62,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
-import DatasetForm from "../components/DatasetForm.vue";
+import DatasetForm from "../edit/DatasetForm.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -72,7 +72,7 @@ const loading = computed(() => store.getters["dataset/loading"]);
 const error = computed(() => store.getters["dataset/error"]);
 
 const endpointServers = computed(
-  () => store.getters["endpointServers/endpointServers"] || []
+  () => store.getters["endpointServer/endpointServers"] || []
 );
 
 const formValid = ref(false);
@@ -92,7 +92,7 @@ const isEdit = ref(false);
 // Load existing profile
 onMounted(async () => {
   try {
-    await store.dispatch("endpointServers/fetchEndpointServers");
+    await store.dispatch("endpointServer/fetchEndpointServers");
   } catch (err) {
     console.error("Error fetching endpoint servers:", err);
   }

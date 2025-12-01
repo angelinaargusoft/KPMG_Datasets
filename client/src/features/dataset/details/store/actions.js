@@ -2,21 +2,7 @@ import {
   uploadDatasetFile,
   getDatasetFiles,
   deleteDatasetFile,
-} from "@/features/dataset/details/services/fileUploadService";
-
-const state = () => ({
-  files: [],
-  loading: false,
-  error: null,
-  pagination: null,
-});
-
-const getters = {
-  files: (state) => state.files,
-  loading: (state) => state.loading,
-  error: (state) => state.error,
-  pagination: (state) => state.pagination,
-};
+} from "../services/fileUploadService";
 
 const actions = {
   async fetchDatasetFiles({ commit }, payload) {
@@ -60,6 +46,7 @@ const actions = {
   ) {
     commit("setLoading", true);
     commit("setError", null);
+
     try {
       await uploadDatasetFile(datasetUUID, file);
 
@@ -82,6 +69,7 @@ const actions = {
   ) {
     commit("setLoading", true);
     commit("setError", null);
+
     try {
       await deleteDatasetFile(datasetUUID, uploadUUID);
 
@@ -105,25 +93,4 @@ const actions = {
   },
 };
 
-const mutations = {
-  setFiles(state, files) {
-    state.files = files;
-  },
-  setLoading(state, val) {
-    state.loading = val;
-  },
-  setError(state, err) {
-    state.error = err;
-  },
-  setPagination(state, pagination) {
-    state.pagination = pagination;
-  },
-};
-
-export default {
-  namespaced: true,
-  state,
-  getters,
-  actions,
-  mutations,
-};
+export default actions;

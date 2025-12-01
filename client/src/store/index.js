@@ -1,12 +1,12 @@
 import { createStore } from "vuex";
-import dataset from "./modules/dataset";
-import endpointServers from "./modules/endpointServers";
-import datasetFileUpload from "./modules/datasetFileUpload";
+import dataset from "@/features/dataset/store";
+import endpointServer from "@/features/endpointServer/store";
+import datasetFileUpload from "@/features/dataset/details/store";
 
 export default createStore({
   modules: {
     dataset,
-    endpointServers, 
+    endpointServer, 
     datasetFileUpload
   },
 });

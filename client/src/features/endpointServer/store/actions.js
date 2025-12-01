@@ -5,21 +5,7 @@ import {
   updateEndpointServer,
   deleteEndpointServer,
   getEndpointServerById,
-} from "@/features/endpointServer/api/endpointServerService";
-
-const state = () => ({
-  endpointServers: [],
-  currentEndpointServer: null,
-  loading: false,
-  error: null,
-});
-
-const getters = {
-  endpointServers: (state) => state.endpointServers,
-  currentEndpointServer: (state) => state.currentEndpointServer,
-  loading: (state) => state.loading,
-  error: (state) => state.error,
-};
+} from "../api/endpointServerService";
 
 const actions = {
   async fetchEndpointServers({ commit }, { page = 1, pageSize = 10 } = {}) {
@@ -113,27 +99,4 @@ const actions = {
   },
 };
 
-const mutations = {
-  setEndpointServers(state, endpoints) {
-    state.endpointServers = endpoints;
-  },
-  setCurrentEndpointServer(state, endpoint) {
-    state.currentEndpointServer = endpoint;
-  },
-  setLoading(state, val) {
-    state.loading = val;
-  },
-  setError(state, err) {
-    state.error = err;
-  },
-};
-
-export default {
-  namespaced: true,
-  state,
-  getters,
-  actions,
-  mutations,
-};
-
-  
+export default actions;

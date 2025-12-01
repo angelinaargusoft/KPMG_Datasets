@@ -67,9 +67,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
-import DatasetFilesTab from "../components/DatasetFilesTab.vue";
-import DatasetTablesTab from "../components/DatasetTablesTab.vue";
-import DatasetHistoryTab from "../components/DatasetHistoryTab.vue";
+import DatasetFilesTab from "./common/DatasetFilesTab.vue";
+import DatasetTablesTab from "./common/DatasetTablesTab.vue";
+import DatasetHistoryTab from "./common/DatasetHistoryTab.vue";
 
 const route = useRoute();
 const store = useStore();

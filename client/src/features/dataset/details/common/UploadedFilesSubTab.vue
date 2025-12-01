@@ -70,7 +70,7 @@
   import { ref, computed, watch, onMounted } from "vue";
   import { useStore } from "vuex";
   import BaseTable from "@/components/common/BaseTable.vue";
-  import FileRow from "../components/FileRow.vue";
+  import FileRow from "../../manage-files/FileRow.vue";
   import { triggerImport } from "@/features/inputHistory/api/inputHistoryService";
   
   const props = defineProps({

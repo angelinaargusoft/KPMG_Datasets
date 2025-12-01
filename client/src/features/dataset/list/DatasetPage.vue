@@ -37,7 +37,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
-import DatasetRow from "../components/DatasetRow.vue";
+import DatasetRow from "./DatasetRow.vue";
 import BaseTable from "@/components/common/BaseTable.vue";
 
 const store = useStore();

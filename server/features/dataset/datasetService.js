@@ -179,8 +179,6 @@ async function deleteDataset(id) {
         const containerName = dataset.uuid.toLowerCase();
 
         await deleteContainer(connectionString, containerName);
-
-        console.log(`Deleted container: ${containerName}`);
       } catch (err) {
         console.error("Failed to delete container:", err);
       }
