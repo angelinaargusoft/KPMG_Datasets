@@ -71,6 +71,7 @@
   import { useStore } from "vuex";
   import BaseTable from "@/components/common/BaseTable.vue";
   import FileRow from "../components/FileRow.vue";
+  import { triggerImport } from "@/features/inputHistory/api/inputHistoryService";
   
   const props = defineProps({
     datasetUuid: {
@@ -195,9 +196,23 @@
   }
   
   // Stubs for import actions
-  function importAsNew(file) {
-    console.log("Import as NEW", file);
+  async function importAsNew(file) {
+  if (!file?.uuid) {
+    console.warn("Cannot import: file has no uuid", file);
+    return;
   }
+
+  try {
+    await triggerImport({
+      datasetUUID: props.datasetUuid,
+      uploadUUID: file.uuid,
+      mode: "new",
+    });
+    console.log("Import as NEW triggered for", file.name);
+  } catch (err) {
+    console.error("Failed to trigger Import as NEW:", err);
+  }
+}
   
   function importAndAppend(file) {
     console.log("Import & APPEND", file);

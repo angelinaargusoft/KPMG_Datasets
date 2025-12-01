@@ -1,8 +1,5 @@
 const EndpointServerService = require("./endpointServerService");
 
-// --------------------------------------------------
-// CREATE
-// --------------------------------------------------
 async function createEndpointServer(req, res, next) {
   try {
     const endpoint = await EndpointServerService.createEndpointServer(req.body);
@@ -12,19 +9,13 @@ async function createEndpointServer(req, res, next) {
   }
 }
 
-// --------------------------------------------------
-// GET ALL (Paginated)
-// --------------------------------------------------
 async function getAllEndpointServers(req, res, next) {
   try {
     const { page = 1, pageSize = 10 } = req.query;
 
-    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
-    const parsedPageSize = Math.max(parseInt(pageSize, 10) || 10, 1);
-
     const result = await EndpointServerService.getEndpointServersPaginated(
-      parsedPage,
-      parsedPageSize
+      page,
+      pageSize
     );
 
     res.json(result);
@@ -33,9 +24,6 @@ async function getAllEndpointServers(req, res, next) {
   }
 }
 
-// --------------------------------------------------
-// GET BY ID
-// --------------------------------------------------
 async function getEndpointServerById(req, res, next) {
   try {
     const server = await EndpointServerService.getEndpointServerById(
@@ -51,9 +39,6 @@ async function getEndpointServerById(req, res, next) {
   }
 }
 
-// --------------------------------------------------
-// GET BY UUID
-// --------------------------------------------------
 async function getEndpointServerByUUID(req, res, next) {
   try {
     const server = await EndpointServerService.getEndpointServerByUUID(
@@ -69,9 +54,6 @@ async function getEndpointServerByUUID(req, res, next) {
   }
 }
 
-// --------------------------------------------------
-// UPDATE
-// --------------------------------------------------
 async function updateEndpointServer(req, res, next) {
   try {
     const updated = await EndpointServerService.updateEndpointServer(
@@ -85,9 +67,6 @@ async function updateEndpointServer(req, res, next) {
   }
 }
 
-// --------------------------------------------------
-// DELETE
-// --------------------------------------------------
 async function deleteEndpointServer(req, res, next) {
   try {
     await EndpointServerService.deleteEndpointServer(req.params.id);
@@ -96,8 +75,6 @@ async function deleteEndpointServer(req, res, next) {
     next(err);
   }
 }
-
-// --------------------------------------------------
 
 module.exports = {
   createEndpointServer,

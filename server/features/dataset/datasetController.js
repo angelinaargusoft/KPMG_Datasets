@@ -11,16 +11,11 @@ async function getAllDatasets(req, res, next) {
   try {
     const { page = 1, pageSize = 10 } = req.query;
 
-    // ensure they’re numbers and >= 1
-    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
-    const parsedPageSize = Math.max(parseInt(pageSize, 10) || 10, 1);
-
     const result = await DatasetService.getDatasetsPaginated(
-      parsedPage,
-      parsedPageSize
+      page,
+      pageSize
     );
 
-    //{ data: [...], pagination: {...} }
     res.json(result);
   } catch (err) {
     next(err);

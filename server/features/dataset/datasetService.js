@@ -7,9 +7,9 @@ const { SecretClient } = require("@azure/keyvault-secrets");
 const { ClientSecretCredential } = require("@azure/identity");
 
 const credential = new ClientSecretCredential(
-  process.env.AZURE_TENANT_ID,
-  process.env.AZURE_CLIENT_ID,
-  process.env.AZURE_CLIENT_SECRET
+  process.env.AZURE_TENANT_ID, //Azure active directory
+  process.env.AZURE_CLIENT_ID, //App registration - which application is trying to authenticate
+  process.env.AZURE_CLIENT_SECRET //secret for app registration
 );
 
 function extractStorageAccountName(resourceId) {
@@ -45,10 +45,25 @@ async function buildBlobConnectionStringFromEndpoint(endpoint) {
     throw new Error("Invalid endpoint hostname/resourceId: cannot extract storage account name");
   }
 
-  // Add fallback to key2 later
-  const accountKey = await getSecretValueFromKeyVault(endpoint.key1);
+  let accountKey = null;
+
+  try {
+    accountKey = await getSecretValueFromKeyVault(endpoint.key1);
+  } catch (err) {
+    console.warn("Failed to fetch key1 from Key Vault, will try key2:", err.message);
+  }
+
+  // If key1 failed or returned null, try key2
+  if (!accountKey && endpoint.key2) {
+    try {
+      accountKey = await getSecretValueFromKeyVault(endpoint.key2);
+    } catch (err) {
+      console.error("Failed to fetch key2 from Key Vault:", err.message);
+    }
+  }
+
   if (!accountKey) {
-    throw new Error("Could not resolve account key from Key Vault (key1)");
+    throw new Error("Could not resolve account key from Key Vault (key1 or key2)");
   }
 
   return (
@@ -57,15 +72,6 @@ async function buildBlobConnectionStringFromEndpoint(endpoint) {
     `AccountKey=${accountKey};` +
     "EndpointSuffix=core.windows.net"
   );
-}
-
-async function ensureEndpointExists(endpointUUID) {
-  if (!endpointUUID) return;
-
-  const endpoint = await EndpointServerService.getEndpointServerByUUID(endpointUUID);
-  if (!endpoint) {
-    throw new Error(`DataEndpoint with UUID ${endpointUUID} does not exist`);
-  }
 }
 
 async function createDataset(data) {
@@ -100,13 +106,11 @@ async function createDataset(data) {
     endpointServerUUID: data.endpointServerUUID || null,
   };
 
-  const createdDataset = await DatasetRepository.createDataset(newDataset);
-
   // If Blob + endpoint provided - create container
-  if (createdDataset.storageType === "Blob" && endpoint) {
+  if (newDataset.storageType === "Blob" && endpoint) {
     try {
       const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
-      const containerName = createdDataset.uuid.toLowerCase();
+      const containerName = newDataset.uuid.toLowerCase();
 
       await createContainerIfNotExists(connectionString, containerName);
     } catch (err) {
@@ -114,7 +118,7 @@ async function createDataset(data) {
       throw new Error("Failed to provision blob container for dataset");
     }
   }
-
+  const createdDataset = await DatasetRepository.createDataset(newDataset);
   return createdDataset;
 }
 
@@ -168,7 +172,7 @@ async function deleteDataset(id) {
     );
 
     if (!endpoint) {
-      console.warn("Dataset endpoint not found — skipping container deletion.");
+      console.warn("Dataset endpoint not found - skipping container deletion.");
     } else {
       try {
         const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);

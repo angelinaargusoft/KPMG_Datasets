@@ -22,7 +22,6 @@ const getters = {
 };
 
 const actions = {
-  // Fetch all endpoint servers
   async fetchEndpointServers({ commit }, { page = 1, pageSize = 10 } = {}) {
     commit("setLoading", true);
     commit("setError", null);
@@ -36,7 +35,6 @@ const actions = {
     }
   },
 
-  // Fetch endpoint server by UUID
   async fetchEndpointServerByUUID({ commit }, uuid) {
     commit("setLoading", true);
     commit("setError", null);
@@ -53,7 +51,6 @@ const actions = {
     }
   },
 
-  // Fetch endpoint by numeric ID (for edit views if needed)
   async fetchEndpointServerById({ commit }, id) {
     commit("setLoading", true);
     commit("setError", null);
@@ -70,7 +67,6 @@ const actions = {
     }
   },
 
-  // Create or update endpoint server
   async saveEndpointServer({ commit, dispatch }, { uuid, endpoint }) {
     commit("setLoading", true);
     commit("setError", null);
@@ -79,18 +75,14 @@ const actions = {
       let savedEndpoint;
 
       if (!uuid) {
-        // CREATE
         savedEndpoint = await createEndpointServer(endpoint);
       } else {
-        // UPDATE via UUID
         savedEndpoint = await updateEndpointServer(uuid, endpoint);
       }
 
       commit("setCurrentEndpointServer", savedEndpoint);
 
-      // refresh list
       await dispatch("fetchEndpointServers");
-
       return savedEndpoint;
     } catch (err) {
       commit("setError", err.message);
@@ -100,7 +92,6 @@ const actions = {
     }
   },
 
-  // Delete endpoint server
   async removeEndpointServer({ commit, dispatch }, id) {
     commit("setLoading", true);
     commit("setError", null);
@@ -117,7 +108,6 @@ const actions = {
     }
   },
 
-  // Reset selected endpoint
   resetCurrentEndpointServer({ commit }) {
     commit("setCurrentEndpointServer", null);
   },

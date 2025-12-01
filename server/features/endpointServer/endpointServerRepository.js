@@ -43,7 +43,6 @@ async function getEndpointServersPaginated(page = 1, pageSize = 10) {
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  // total count
   const [countRows] = await pool.execute(`
     SELECT COUNT(*) AS total
     FROM EndpointServers
@@ -51,7 +50,6 @@ async function getEndpointServersPaginated(page = 1, pageSize = 10) {
   const totalItems = countRows[0]?.total || 0;
   const totalPages = Math.max(Math.ceil(totalItems / limit), 1);
 
-  // page of data (ordered by newest id)
   const query = `
     SELECT *
     FROM EndpointServers
@@ -103,7 +101,6 @@ async function getEndpointServerByUUID(uuid) {
   return rows[0] || null;
 }
 
-// here `uuid` is the endpoint_config.uuid, mirroring your Datasets update flow
 async function updateEndpointServer(uuid, data) {
   const existing = await getEndpointServerByUUID(uuid);
   if (!existing) throw new Error("Endpoint server not found");

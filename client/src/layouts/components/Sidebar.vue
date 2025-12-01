@@ -42,7 +42,6 @@ const dataSources = [
 ];
 
 const handleActivatorClick = () => {
-  // if collapsed, ask parent to expand
   if (props.rail) {
     emit("expand-request");
   }
@@ -75,7 +74,7 @@ const handleActivatorClick = () => {
   margin-right: 0;
 }
 
-/* Optional: slightly smaller icons in rail */
+/* slightly smaller icons in rail */
 :deep(.v-navigation-drawer--rail .nav-icon) {
   font-size: 20px;
 }

@@ -98,7 +98,6 @@
   
   const activeSubTab = ref("uploaded"); // default active button
   
-  // Upload all files via backend
   async function uploadAll() {
     for (const file of pendingFiles.value) {
       await store.dispatch("datasetFileUpload/uploadFileToDataset", {

@@ -1,6 +1,5 @@
 <template>
   <v-row class="py-3 px-4 align-center dataset-row" dense no-gutters>
-    <!-- Clickable Dataset Name -->
     <v-col cols="2">
       <span class="dataset-name" @click="goToDetails(dataset)">
         {{ dataset.name }}
@@ -12,14 +11,11 @@
     </v-col>
 
     <v-col cols="2">
-  <span>{{ uploadedAtFormatted.date }}</span>
-  <span class="d-block">{{ uploadedAtFormatted.time }}</span>
-</v-col>
-
-
-    <v-col cols="1">
-      Angelina
+      <span>{{ uploadedAtFormatted.date }}</span>
+      <span class="d-block">{{ uploadedAtFormatted.time }}</span>
     </v-col>
+
+    <v-col cols="1"> Angelina </v-col>
 
     <v-col cols="1">
       {{ dataset.storageType || "—" }}
@@ -31,20 +27,10 @@
 
     <!-- Actions -->
     <v-col cols="2">
-  <ActionIconButton
-    type="edit"
-    @click="editDataset(dataset)"
-  />
-  <ActionIconButton
-    type="manage"
-    @click="$emit('manage', dataset)"
-  />
-  <ActionIconButton
-    type="delete"
-    @click="confirmDelete(dataset)"
-  />
-</v-col>
-
+      <ActionIconButton type="edit" @click="editDataset(dataset)" />
+      <ActionIconButton type="manage" />
+      <ActionIconButton type="delete" @click="confirmDelete(dataset)" />
+    </v-col>
 
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="420">
@@ -54,7 +40,8 @@
         </v-card-title>
         <v-card-text>
           Are you sure you want to delete
-          <strong>{{ dataset.name }}</strong>?
+          <strong>{{ dataset.name }}</strong
+          >?
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -79,6 +66,7 @@ const store = useStore();
 const router = useRouter();
 
 const deleteDialog = ref(false);
+
 let selectedDataset = null;
 
 // Open dialog
@@ -113,40 +101,41 @@ function formatDateTime(ts) {
   const d = new Date(ts);
 
   return {
-    date: d.toLocaleDateString("en-GB"),   // DD/MM/YYYY
+    date: d.toLocaleDateString("en-GB"), 
     time: d.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false 
+      hour12: false,
     }),
   };
 }
 
-const uploadedAtFormatted = computed(() => formatDateTime(props.dataset.createdAt));
-
+const uploadedAtFormatted = computed(() =>
+  formatDateTime(props.dataset.createdAt)
+);
 </script>
 
 <style scoped>
 .dataset-row {
-  border-bottom: 1px solid #F0F0F0;
-  background-color: #FFFFFF;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #ffffff;
   transition: background-color 0.2s ease;
 }
 
 .dataset-row:hover {
-  background-color: #F5F8FF;
+  background-color: #f5f8ff;
   cursor: pointer;
 }
 
 .dataset-name {
-  color: #1565C0;
+  color: #1565c0;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
 .dataset-name:hover {
-  color: #0D47A1;
+  color: #0d47a1;
   text-decoration: underline;
 }
 

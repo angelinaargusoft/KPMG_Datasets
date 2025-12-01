@@ -41,7 +41,7 @@ async function getDatasetsPaginated(page = 1, pageSize = 10) {
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  // 1) total count
+  // total count
   const [countRows] = await pool.execute(`
     SELECT COUNT(*) AS total
     FROM Datasets
@@ -49,8 +49,7 @@ async function getDatasetsPaginated(page = 1, pageSize = 10) {
   const totalItems = countRows[0]?.total || 0;
   const totalPages = Math.max(Math.ceil(totalItems / limit), 1);
 
-  // 2) page of data
-  // IMPORTANT: use LIMIT offset, count with positional params
+  // page of data
   const query = `
   SELECT *
   FROM Datasets

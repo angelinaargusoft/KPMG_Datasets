@@ -24,12 +24,11 @@ const getters = {
 };
 
 const actions = {
-  // Fetch datasets with pagination
+
   async fetchDatasets({ commit }, { page = 1, pageSize = 10 } = {}) {
     commit("setLoading", true);
     commit("setError", null);
     try {
-      // backend should return: { data, pagination }
       const { data, pagination } = await getAllDatasets(page, pageSize);
       commit("setDatasets", data);
       commit("setPagination", pagination);
@@ -40,7 +39,6 @@ const actions = {
     }
   },
 
-  // Fetch single dataset by ID
   async fetchDatasetById({ commit }, datasetId) {
     commit("setLoading", true);
     commit("setError", null);
@@ -55,7 +53,6 @@ const actions = {
     }
   },
 
-  // Fetch dataset by UUID
   async fetchDatasetByUUID({ commit }, uuid) {
     commit("setLoading", true);
     commit("setError", null);
@@ -72,23 +69,19 @@ const actions = {
     }
   },
 
-  // Create or update dataset
   async saveDataset({ commit, dispatch, state }, { datasetId, dataset }) {
     commit("setLoading", true);
     commit("setError", null);
     try {
       let savedDataset;
       if (!datasetId) {
-        // Create new dataset
         savedDataset = await createDataset(dataset);
       } else {
-        // Update existing dataset
         savedDataset = await updateDataset(datasetId, dataset);
       }
 
       commit("setCurrentDataset", savedDataset);
 
-      // Refresh dataset list after save, keeping current page if available
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
       await dispatch("fetchDatasets", { page, pageSize });
@@ -102,14 +95,12 @@ const actions = {
     }
   },
 
-  // Delete dataset
   async removeDataset({ commit, dispatch, state }, datasetId) {
     commit("setLoading", true);
     commit("setError", null);
     try {
       await deleteDataset(datasetId);
 
-      // Refresh dataset list after deletion, keep current page
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
       await dispatch("fetchDatasets", { page, pageSize });
@@ -123,7 +114,6 @@ const actions = {
     }
   },
 
-  // Reset current dataset
   resetCurrentDataset({ commit }) {
     commit("setCurrentDataset", null);
   },

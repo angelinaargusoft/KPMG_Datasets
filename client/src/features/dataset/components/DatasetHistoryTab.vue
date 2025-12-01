@@ -132,7 +132,6 @@
     });
   }
   
-  // Initial load
   onMounted(async () => {
     await store.dispatch("datasetHistory/fetchHistory", {
       datasetUUID: props.datasetUuid,

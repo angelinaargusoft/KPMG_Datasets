@@ -1,5 +1,3 @@
-// src/store/modules/datasetUpload.js
-
 import {
   uploadDatasetFile,
   getDatasetFiles,
@@ -21,14 +19,10 @@ const getters = {
 };
 
 const actions = {
-  // Fetch uploaded files for a dataset (by UUID) with pagination
   async fetchDatasetFiles({ commit }, payload) {
     commit("setLoading", true);
     commit("setError", null);
 
-    // Support both:
-    // 1) fetchDatasetFiles("uuid")
-    // 2) fetchDatasetFiles({ datasetUUID: "uuid", page, pageSize })
     let datasetUUID;
     let page = 1;
     let pageSize = 10;
@@ -59,7 +53,7 @@ const actions = {
       commit("setLoading", false);
     }
   },
-  // Upload a single file to a dataset, then refresh list
+
   async uploadFileToDataset(
     { commit, dispatch, state },
     { datasetUUID, file }
@@ -69,7 +63,6 @@ const actions = {
     try {
       await uploadDatasetFile(datasetUUID, file);
 
-      // keep the current page if available
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
 
@@ -83,7 +76,6 @@ const actions = {
     }
   },
 
-  // Delete an uploaded file (by upload UUID), then refresh list
   async removeDatasetFile(
     { commit, dispatch, state },
     { datasetUUID, uploadUUID }
@@ -93,7 +85,6 @@ const actions = {
     try {
       await deleteDatasetFile(datasetUUID, uploadUUID);
 
-      // keep the current page if available
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
 
@@ -107,7 +98,6 @@ const actions = {
     }
   },
 
-  // Reset files list (e.g. on dataset change / route leave)
   resetFiles({ commit }) {
     commit("setFiles", []);
     commit("setPagination", null);

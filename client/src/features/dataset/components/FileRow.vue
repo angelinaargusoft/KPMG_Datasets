@@ -14,7 +14,7 @@
         {{ formattedSize }}
       </v-col>
   
-      <!-- Uploaded at: date + time stacked -->
+      <!-- Uploaded at -->
       <v-col cols="3">
         <span>{{ uploadedAtFormatted.date }} {{ uploadedAtFormatted.time }}</span>
       </v-col>
@@ -60,7 +60,7 @@
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   });
   
-  // Date formatting (same style as DatasetRow)
+  // Date formatting 
   function formatDateTime(ts) {
     if (!ts) {
       return { date: "—", time: "" };

@@ -69,7 +69,7 @@
     () => tablesPagination.value?.totalItems || 0
   );
   
-  // sample tables data getter (temp)
+  // temp
   const tablesList = computed(
     () => store.getters["datasetTables/items"] || []
   );

@@ -1,14 +1,8 @@
 <template>
-    <!-- Navbar with Sidebar toggle -->
     <Navbar @toggle-sidebar="rail = !rail" />
-
-    <!-- Sidebar sticks to the left -->
     <Sidebar :rail="rail" @expand-request="rail = false" />
-
-    <!-- Main scrollable content area -->
     <v-main class="main-content">
       <v-container fluid class="pa-0">
-        <!-- Whatever page is active -->
         <router-view />
       </v-container>
     </v-main>

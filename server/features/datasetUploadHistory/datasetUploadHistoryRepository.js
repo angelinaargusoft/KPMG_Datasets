@@ -1,8 +1,6 @@
-const { v4: uuidv4 } = require("uuid");
 const pool = require("../../config/database");
 
-async function logDatasetUpload({ datasetUUID, endpointUUID, filename, fileSize }) {
-  const uuid = uuidv4();
+async function logDatasetUpload({ uuid, datasetUUID, endpointUUID, filename, fileSize }) {
 
   const query = `
     INSERT INTO datasetUploadHistory
@@ -23,12 +21,11 @@ async function logDatasetUpload({ datasetUUID, endpointUUID, filename, fileSize 
 }
 
 async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize = 10) {
-  // normalize pagination input
+
   const limit = Math.max(parseInt(pageSize, 10) || 10, 1);
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  // total count for this dataset
   const [countRows] = await pool.execute(
     `
       SELECT COUNT(*) AS total
@@ -41,7 +38,6 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
   const totalItems = countRows[0]?.total || 0;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / limit);
 
-  // fetch a page of data
   const query = `
     SELECT
       uuid,
@@ -58,7 +54,7 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
   const [rows] = await pool.query(query, [datasetUUID]);
 
   const data = rows.map((row) => ({
-    uuid: row.uuid,          // upload UUID
+    uuid: row.uuid,         
     name: row.filename,
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,
@@ -97,8 +93,8 @@ async function getUploadByUUID(uploadUUID) {
   if (!row) return null;
 
   return {
-    uuid: row.uuid,              // upload UUID
-    datasetUUID: row.dataset,    // dataset UUID
+    uuid: row.uuid,              
+    datasetUUID: row.dataset,    
     name: row.filename,
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,

@@ -68,7 +68,6 @@ const router = useRouter();
 const route = useRoute();
 const store = useStore();
 
-// Vuex reactive states
 const loading = computed(() => store.getters["dataset/loading"]);
 const error = computed(() => store.getters["dataset/error"]);
 
@@ -78,7 +77,7 @@ const endpointServers = computed(
 
 const formValid = ref(false);
 
-// Local reactive dataset object (v-model)
+// Local reactive dataset object 
 const localDataset = ref({
   name: "",
   description: "",
@@ -93,7 +92,6 @@ const isEdit = ref(false);
 // Load existing profile
 onMounted(async () => {
   try {
-    // 🔹 updated module/action name
     await store.dispatch("endpointServers/fetchEndpointServers");
   } catch (err) {
     console.error("Error fetching endpoint servers:", err);

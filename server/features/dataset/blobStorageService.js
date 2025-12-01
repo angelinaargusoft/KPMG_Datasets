@@ -1,4 +1,3 @@
-// blobStorageService.js
 const { BlobServiceClient } = require("@azure/storage-blob");
 
 function createBlobClient(connectionString) {

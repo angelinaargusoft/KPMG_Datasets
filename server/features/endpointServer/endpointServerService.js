@@ -1,4 +1,3 @@
-// services/endpointServer/endpointServerService.js
 const { v4: uuidv4 } = require("uuid");
 const EndpointServerRepository = require("./endpointServerRepository");
 
@@ -10,18 +9,18 @@ function validateType(type) {
 
 async function createEndpointServer(data) {
   if (!data.name) throw new Error("Endpoint name is required");
-  if (!data.type) throw new Error("Endpoint type is required"); // blob | sftp
+  if (!data.type) throw new Error("Endpoint type is required");
   validateType(data.type);
 
   const newEndpoint = {
     uuid: uuidv4(),
     name: data.name.trim(),
     active: data.active ?? 1,
-    type: data.type,                                  // 'blob' or 'sftp'
-    hostname: data.hostname || null,                  // e.g. connection string / host
-    apiKey: data.apiKey || null,                      // SAS / password / etc.
-    key1: data.key1 || null,                          // e.g. Key Vault URI
-    key2: data.key2 || null,                          // e.g. Key Vault URI
+    type: data.type,                                 
+    hostname: data.hostname || null,                  
+    apiKey: data.apiKey || null,                      
+    key1: data.key1 || null,                          
+    key2: data.key2 || null,                         
     isKeyEncrypted: data.isKeyEncrypted ?? 1,
     useAzureFunction: data.useAzureFunction ?? 0,
   };
@@ -49,7 +48,7 @@ async function getEndpointServerByUUID(uuid) {
 }
 
 async function updateEndpointServer(uuid, data) {
-  // only allow specific fields to be updated
+
   const allowedFields = [
     "name",
     "active",
@@ -86,7 +85,6 @@ async function updateEndpointServer(uuid, data) {
 }
 
 async function deleteEndpointServer(id) {
-  // ensure it exists first
   const existing = await EndpointServerRepository.getEndpointServerById(id);
   if (!existing) throw new Error("Endpoint server not found");
 

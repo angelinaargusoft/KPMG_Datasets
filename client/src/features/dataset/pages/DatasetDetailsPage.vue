@@ -78,14 +78,12 @@ const datasetUUID = route.params.id;
 
 const activeTab = ref("files");
 
-// ---- DATASET HEADER (from dataset store) ----
 const currentDataset = computed(
   () => store.getters["dataset/currentDataset"] || {}
 );
 
 const datasetName = computed(() => currentDataset.value.name || "Dataset");
 
-// pick tablePrefix if available, fall back to prefix
 const datasetPrefix = computed(() => {
   const prefix =
     currentDataset.value.tablePrefix ?? currentDataset.value.prefix;
