@@ -35,36 +35,33 @@
     </v-row>
 
     <!-- Body -->
-<slot name="rows" :items="sortedItems" :columns="columns" />
+    <slot name="rows" :items="sortedItems" :columns="columns" />
 
-<!-- Only hide rows — NOT pagination -->
-<div v-if="!loading && !hasData" class="text-center py-8 text-grey">
-  {{ emptyText }}
-  <v-divider />
-</div>
+    <!-- Only hide rows — NOT pagination -->
+    <div v-if="!loading && !hasData" class="text-center py-8 text-grey">
+      {{ emptyText }}
+      <v-divider />
+    </div>
 
-<!-- Always show pagination when serverPagination=true -->
-<BaseTablePagination
-  v-if="serverPagination"
-  :page="page"
-  :items-per-page="itemsPerPage"
-  :total-items="totalItems"
-  @update:page="emit('update:page', $event)"
-  @update:items-per-page="emit('update:itemsPerPage', $event)"
-/>
+    <!-- Always show pagination when serverPagination=true -->
+    <BaseTablePagination
+      v-if="serverPagination"
+      :page="page"
+      :items-per-page="itemsPerPage"
+      :total-items="totalItems"
+      @update:page="emit('update:page', $event)"
+      @update:items-per-page="emit('update:itemsPerPage', $event)"
+    />
 
-<div v-if="loading" class="text-center py-8">
-  <v-progress-circular indeterminate />
-</div>
-
+    <div v-if="loading" class="text-center py-8">
+      <v-progress-circular indeterminate />
+    </div>
   </component>
 </template>
-
 
 <script setup>
 import { computed, ref } from "vue";
 import BaseTablePagination from "@/components/common/BaseTablePagination.vue";
-
 
 const props = defineProps({
   columns: {
@@ -113,7 +110,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:page", "update:itemsPerPage"]);
+// 🔹 NEW: emit sort info to parent
+const emit = defineEmits([
+  "update:page",
+  "update:itemsPerPage",
+  "update:sort", // { key, direction }
+]);
 
 // ---------- state ----------
 const sortKey = ref(null);        // current sorted column key
@@ -123,11 +125,11 @@ const hasData = computed(
   () => Array.isArray(props.data) && props.data.length > 0
 );
 
-
 // ---------- sorting logic ----------
 function onHeaderClick(col) {
   if (!col.sortable || !col.key) return;
 
+  // toggle local sort state (for icons + client mode)
   if (sortKey.value === col.key) {
     sortDirection.value =
       sortDirection.value === "asc" ? "desc" : "asc";
@@ -135,10 +137,23 @@ function onHeaderClick(col) {
     sortKey.value = col.key;
     sortDirection.value = "asc";
   }
+
+  // notify parent so backend can sort
+  if (sortDirection.value) {
+    emit("update:sort", {
+      key: sortKey.value,
+      direction: sortDirection.value, // "asc" | "desc"
+    });
+  } 
 }
 
 const sortedItems = computed(() => {
   const items = props.data || [];
+
+  // when serverPagination is true, assume backend already returns sorted data.
+  if (props.serverPagination) {
+    return items;
+  }
 
   if (!sortKey.value || !sortDirection.value) {
     return items;
@@ -178,7 +193,7 @@ function getSortIcon(col) {
   // not sortable? shouldn't be called but safe default
   if (!col.sortable) return "arrow_drop_up";
 
-  // if this column is not the active sort → light default icon
+  // if this column is not the active sort - light default icon
   if (sortKey.value !== col.key || !sortDirection.value) {
     return "arrow_drop_up";
   }
@@ -230,5 +245,5 @@ function getSortIcon(col) {
   opacity: 1;
   color: #424242;
 }
-
 </style>
+

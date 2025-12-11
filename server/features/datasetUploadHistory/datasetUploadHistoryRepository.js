@@ -1,7 +1,12 @@
 const pool = require("../../config/database");
 
-async function logDatasetUpload({ uuid, datasetUUID, endpointUUID, filename, fileSize }) {
-
+async function logDatasetUpload({
+  uuid,
+  datasetUUID,
+  endpointUUID,
+  filename,
+  fileSize,
+}) {
   const query = `
     INSERT INTO datasetUploadHistory
       (uuid, dataset, endpoint, filename, uploadedAt, fileSize)
@@ -20,25 +25,56 @@ async function logDatasetUpload({ uuid, datasetUUID, endpointUUID, filename, fil
   return { uuid };
 }
 
-async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize = 10) {
-
+async function getUploadsByDatasetUUIDPaginated(
+  datasetUUID,
+  page = 1,
+  pageSize = 10,
+  sortBy = null,
+  sortDirection = null,
+  search = null          
+) {
   const limit = Math.max(parseInt(pageSize, 10) || 10, 1);
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  const [countRows] = await pool.execute(
-    `
-      SELECT COUNT(*) AS total
-      FROM datasetUploadHistory
-      WHERE dataset = ?
-    `,
-    [datasetUUID]
-  );
+  // Map frontend fields - actual DB column names
+  const SORT_COLUMN_MAP = {
+    name: "filename",
+    size: "fileSize",
+    uploadedAt: "uploadedAt",
+    endpointUUID: "endpoint",
+  };
 
+  // Resolve column safely
+  const sortColumn = SORT_COLUMN_MAP[sortBy] || "uploadedAt";
+
+  // Allow only ASC or DESC
+  const direction = sortDirection && sortDirection.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+  let whereClause = `WHERE dataset = ?`;
+  const whereParams = [datasetUUID];
+
+  if (search) {
+    const like = `%${search}%`;
+    whereClause += `
+      AND (
+        filename LIKE ?
+      )
+    `;
+    whereParams.push(like);
+  }
+
+  // Count total items
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM datasetUploadHistory
+    ${whereClause}
+  `;
+  const [countRows] = await pool.execute(countQuery, whereParams);
   const totalItems = countRows[0]?.total || 0;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / limit);
 
-  const query = `
+  const dataQuery = `
     SELECT
       uuid,
       filename,
@@ -46,15 +82,15 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
       uploadedAt,
       endpoint
     FROM datasetUploadHistory
-    WHERE dataset = ?
-    ORDER BY uploadedAt DESC
-    LIMIT ${offset}, ${limit}
+    ${whereClause}
+    ORDER BY ${sortColumn} ${direction}
+    LIMIT ?, ?
   `;
 
-  const [rows] = await pool.query(query, [datasetUUID]);
+  const [rows] = await pool.query(dataQuery, [...whereParams, offset, limit]);
 
   const data = rows.map((row) => ({
-    uuid: row.uuid,         
+    uuid: row.uuid,
     name: row.filename,
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,
@@ -70,9 +106,13 @@ async function getUploadsByDatasetUUIDPaginated(datasetUUID, page = 1, pageSize 
       totalPages,
       hasNextPage: currentPage < totalPages,
       hasPrevPage: currentPage > 1,
+      sortBy: sortBy || "uploadedAt",
+      sortDirection: direction.toLowerCase(),
+      search: search || null, 
     },
   };
 }
+
 
 async function getUploadByUUID(uploadUUID) {
   const query = `
@@ -93,8 +133,8 @@ async function getUploadByUUID(uploadUUID) {
   if (!row) return null;
 
   return {
-    uuid: row.uuid,              
-    datasetUUID: row.dataset,    
+    uuid: row.uuid,
+    datasetUUID: row.dataset,
     name: row.filename,
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,
@@ -118,6 +158,3 @@ module.exports = {
   getUploadByUUID,
   deleteUpload,
 };
-
-
-

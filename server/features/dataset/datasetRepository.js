@@ -35,29 +35,65 @@ async function createDataset(dataset) {
   return await getDatasetById(result.insertId);
 }
 
-async function getDatasetsPaginated(page = 1, pageSize = 10) {
+async function getDatasetsPaginated(
+  page = 1,
+  pageSize = 10,
+  sortBy = null,
+  sortDirection = null,
+  search = null
+) {
   // ensure positive integers
   const limit = Math.max(parseInt(pageSize, 10) || 10, 1);
   const currentPage = Math.max(parseInt(page, 10) || 1, 1);
   const offset = (currentPage - 1) * limit;
 
-  // total count
-  const [countRows] = await pool.execute(`
+  // Map frontend sort keys - real DB columns (whitelist)
+  const SORT_COLUMN_MAP = {
+    name: "name",
+    description: "description",
+    createdAt: "createdAt",
+    createdBy: "createdBy",
+    storageType: "storageType",
+    enablev3: "enablev3",
+  };
+
+  const sortColumn = SORT_COLUMN_MAP[sortBy] || "createdAt";
+  const direction =
+    sortDirection && sortDirection.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+  // optional WHERE clause for search
+  let whereClause = "";
+  const whereParams = [];
+
+  if (search) {
+    const like = `%${search}%`;
+    whereClause = `
+      WHERE
+        name LIKE ? OR
+        description LIKE ? 
+    `;
+    whereParams.push(like, like);
+  }
+
+  // total count with search
+  const countQuery = `
     SELECT COUNT(*) AS total
     FROM Datasets
-  `);
+    ${whereClause}
+  `;
+  const [countRows] = await pool.execute(countQuery, whereParams);
   const totalItems = countRows[0]?.total || 0;
   const totalPages = Math.max(Math.ceil(totalItems / limit), 1);
 
-  // page of data
-  const query = `
-  SELECT *
-  FROM Datasets
-  ORDER BY createdAt DESC
-  LIMIT ${offset}, ${limit}
-`;
+  const dataQuery = `
+    SELECT *
+    FROM Datasets
+    ${whereClause}
+    ORDER BY ${sortColumn} ${direction}
+    LIMIT ?, ?
+  `;
 
-const [rows] = await pool.query(query);
+  const [rows] = await pool.query(dataQuery, [...whereParams, offset, limit]);
 
   return {
     data: rows,
@@ -68,6 +104,9 @@ const [rows] = await pool.query(query);
       totalPages,
       hasNextPage: currentPage < totalPages,
       hasPrevPage: currentPage > 1,
+      sortBy: sortBy || "createdAt",
+      sortDirection: direction.toLowerCase(),
+      search: search || null,
     },
   };
 }

@@ -8,13 +8,34 @@ import {
 } from "../list/services/datasetService";
 
 const actions = {
-  async fetchDatasets({ commit }, { page = 1, pageSize = 10 } = {}) {
+  async fetchDatasets(
+    { commit },
+    {
+      page = 1,
+      pageSize = 10,
+      sortBy = null,
+      sortDirection = null,
+      search = null,
+    } = {}
+  ) {
     commit("setLoading", true);
     commit("setError", null);
     try {
-      const { data, pagination } = await getAllDatasets(page, pageSize);
+      const { data, pagination } = await getAllDatasets(
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        search
+      );
+
       commit("setDatasets", data);
-      commit("setPagination", pagination);
+      commit("setPagination", {
+        ...pagination,
+        sortBy,
+        sortDirection,
+        search,
+      });
     } catch (err) {
       commit("setError", err.message || "Failed to fetch datasets");
     } finally {
@@ -67,7 +88,17 @@ const actions = {
 
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
-      await dispatch("fetchDatasets", { page, pageSize });
+      const sortBy = state.pagination?.sortBy || null;
+      const sortDirection = state.pagination?.sortDirection || null;
+      const search = state.pagination?.search || null;
+
+      await dispatch("fetchDatasets", {
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        search,
+      });
 
       return savedDataset;
     } catch (err) {
@@ -86,7 +117,17 @@ const actions = {
 
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
-      await dispatch("fetchDatasets", { page, pageSize });
+      const sortBy = state.pagination?.sortBy || null;
+      const sortDirection = state.pagination?.sortDirection || null;
+      const search = state.pagination?.search || null;
+
+      await dispatch("fetchDatasets", {
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        search,
+      });
 
       return true;
     } catch (err) {
@@ -103,3 +144,5 @@ const actions = {
 };
 
 export default actions;
+
+

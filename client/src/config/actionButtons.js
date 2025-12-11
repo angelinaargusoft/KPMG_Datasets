@@ -21,12 +21,12 @@ export const ACTION_BUTTONS = {
       tooltip: "Manage",
     },
     importNew: {
-      icon: "import_export",
+      icon: "drive_file_move",
       color: "primary",
       tooltip: "Import as new",
     },
     importAppend: {
-      icon: "playlist_add",
+      icon: "add_circle",
       color: "primary",
       tooltip: "Import & append",
     },

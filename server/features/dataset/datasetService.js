@@ -1,7 +1,10 @@
 const { v4: uuidv4 } = require("uuid");
 const DatasetRepository = require("./datasetRepository");
-const EndpointServerService = require("../endpointServer/endpointServerService")
-const { createContainerIfNotExists, deleteContainer } = require("./blobStorageService");
+const EndpointServerService = require("../endpointServer/endpointServerService");
+const {
+  createContainerIfNotExists,
+  deleteContainer,
+} = require("./blobStorageService");
 
 const { SecretClient } = require("@azure/keyvault-secrets");
 const { ClientSecretCredential } = require("@azure/identity");
@@ -35,14 +38,19 @@ async function getSecretValueFromKeyVault(secretUri) {
 }
 
 async function buildBlobConnectionStringFromEndpoint(endpoint) {
-  if (!endpoint) throw new Error("Endpoint is required to build connection string");
+  if (!endpoint)
+    throw new Error("Endpoint is required to build connection string");
   if (endpoint.type !== "blob") {
-    throw new Error("Endpoint type must be 'blob' to build blob connection string");
+    throw new Error(
+      "Endpoint type must be 'blob' to build blob connection string"
+    );
   }
 
   const accountName = extractStorageAccountName(endpoint.hostname);
   if (!accountName) {
-    throw new Error("Invalid endpoint hostname/resourceId: cannot extract storage account name");
+    throw new Error(
+      "Invalid endpoint hostname/resourceId: cannot extract storage account name"
+    );
   }
 
   let accountKey = null;
@@ -50,7 +58,10 @@ async function buildBlobConnectionStringFromEndpoint(endpoint) {
   try {
     accountKey = await getSecretValueFromKeyVault(endpoint.key1);
   } catch (err) {
-    console.warn("Failed to fetch key1 from Key Vault, will try key2:", err.message);
+    console.warn(
+      "Failed to fetch key1 from Key Vault, will try key2:",
+      err.message
+    );
   }
 
   // If key1 failed or returned null, try key2
@@ -63,7 +74,9 @@ async function buildBlobConnectionStringFromEndpoint(endpoint) {
   }
 
   if (!accountKey) {
-    throw new Error("Could not resolve account key from Key Vault (key1 or key2)");
+    throw new Error(
+      "Could not resolve account key from Key Vault (key1 or key2)"
+    );
   }
 
   return (
@@ -76,7 +89,8 @@ async function buildBlobConnectionStringFromEndpoint(endpoint) {
 
 async function createDataset(data) {
   if (!data.name) throw new Error("Dataset name is required");
-  if (!data.applicationPackageId) throw new Error("ApplicationPackageId is required");
+  if (!data.applicationPackageId)
+    throw new Error("ApplicationPackageId is required");
 
   if (!["Blob", "SFTP"].includes(data.storageType)) {
     throw new Error("Invalid storageType. Allowed: Blob, SFTP");
@@ -90,7 +104,9 @@ async function createDataset(data) {
     );
 
     if (!endpoint) {
-      throw new Error(`DataEndpoint with UUID ${data.endpointServerUUID} does not exist`);
+      throw new Error(
+        `DataEndpoint with UUID ${data.endpointServerUUID} does not exist`
+      );
     }
   }
 
@@ -109,7 +125,9 @@ async function createDataset(data) {
   // If Blob + endpoint provided - create container
   if (newDataset.storageType === "Blob" && endpoint) {
     try {
-      const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
+      const connectionString = await buildBlobConnectionStringFromEndpoint(
+        endpoint
+      );
       const containerName = newDataset.uuid.toLowerCase();
 
       await createContainerIfNotExists(connectionString, containerName);
@@ -126,8 +144,20 @@ async function getAllDatasets() {
   return DatasetRepository.getAllDatasets();
 }
 
-async function getDatasetsPaginated(page = 1, pageSize = 10) {
-  return DatasetRepository.getDatasetsPaginated(page, pageSize);
+async function getDatasetsPaginated(
+  page = 1,
+  pageSize = 10,
+  sortBy = null,
+  sortDirection = null,
+  search = null
+) {
+  return DatasetRepository.getDatasetsPaginated(
+    page,
+    pageSize,
+    sortBy,
+    sortDirection,
+    search
+  );
 }
 
 async function getDatasetById(id) {
@@ -157,7 +187,10 @@ async function updateDataset(id, data) {
     throw new Error("No valid fields to update");
   }
 
-  const updatedDataset = await DatasetRepository.updateDataset(id, cleanUpdates);
+  const updatedDataset = await DatasetRepository.updateDataset(
+    id,
+    cleanUpdates
+  );
   return updatedDataset;
 }
 
@@ -175,7 +208,9 @@ async function deleteDataset(id) {
       console.warn("Dataset endpoint not found - skipping container deletion.");
     } else {
       try {
-        const connectionString = await buildBlobConnectionStringFromEndpoint(endpoint);
+        const connectionString = await buildBlobConnectionStringFromEndpoint(
+          endpoint
+        );
         const containerName = dataset.uuid.toLowerCase();
 
         await deleteContainer(connectionString, containerName);
@@ -198,17 +233,5 @@ module.exports = {
   getDatasetByUUID,
   updateDataset,
   deleteDataset,
-  buildBlobConnectionStringFromEndpoint
+  buildBlobConnectionStringFromEndpoint,
 };
-
-
-
-
-
-
-
-
-
-
-
-

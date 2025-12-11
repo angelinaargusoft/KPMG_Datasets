@@ -5,11 +5,22 @@ export const createDataset = async (data) => {
   return res.data.dataset;
 };
 
-export const getAllDatasets = async (page = 1, pageSize = 10) => {
-  const res = await api.get(`/datasets`, {
-    params: { page, pageSize },
-  });
-  return res.data;
+export const getAllDatasets = async (
+  page = 1,
+  pageSize = 10,
+  sortBy,
+  sortDirection,
+  search
+) => {
+  const params = { page, pageSize };
+
+  // only include if defined
+  if (sortBy) params.sortBy = sortBy;
+  if (sortDirection) params.sortDirection = sortDirection;
+  if (search) params.search = search;
+
+  const res = await api.get(`/datasets`, { params });
+  return res.data; 
 };
 
 export const getDatasetById = async (id) => {
@@ -31,6 +42,7 @@ export const deleteDataset = async (id) => {
   const res = await api.delete(`/datasets/${id}`);
   return res.data; 
 };
+
 
 
 

@@ -1,13 +1,24 @@
 <template>
   <v-container class="py-8" theme="light" fluid>
     <v-card outlined class="elevation-1 pa-0">
-      <!-- Header -->
-      <div class="d-flex justify-space-between align-center px-4 py-4 flex-wrap">
+      <!-- HEADER -->
+      <div
+        class="d-flex justify-space-between align-center px-4 py-4 flex-wrap"
+      >
         <h2 class="text-h5 font-weight-600">Datasets</h2>
-
-        <div class="d-flex align-center" style="gap: 12px; flex: 1; justify-content: flex-end;">
-          <v-text-field v-model="searchQuery" placeholder="Search" density="compact" variant="outlined"
-            class="search-clean" hide-details>
+      <!-- SEARCH BAR -->
+        <div
+          class="d-flex align-center"
+          style="gap: 12px; flex: 1; justify-content: flex-end"
+        >
+          <v-text-field
+            v-model="searchQuery"
+            placeholder="Search"
+            density="compact"
+            variant="outlined"
+            class="search-clean"
+            hide-details
+          >
             <template #prepend-inner>
               <span class="material-symbols-outlined search-icon">
                 search
@@ -15,24 +26,45 @@
             </template>
           </v-text-field>
 
-          <v-btn variant="text" color="primary" class="add-icon-btn" @click="$router.push('/admin/datasets/add')">
+          <v-btn
+            variant="text"
+            color="primary"
+            class="add-icon-btn"
+            @click="$router.push('/admin/datasets/add')"
+          >
             <span class="material-symbols-outlined">add_circle</span>
           </v-btn>
         </div>
       </div>
 
       <!-- REUSABLE TABLE -->
-      <BaseTable embedded :columns="columns" :data="filteredDatasets" :loading="loading" show-actions server-pagination
-        :page="page" :items-per-page="itemsPerPage" :total-items="totalItems" @update:page="page = $event"
-        @update:items-per-page="itemsPerPage = $event" :actions-cols="2" empty-text="No matching datasets found.">
+      <BaseTable
+        embedded
+        :columns="columns"
+        :data="filteredDatasets"
+        :loading="loading"
+        show-actions
+        server-pagination
+        :page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :actions-cols="2"
+        empty-text="No matching datasets found."
+        @update:page="onPageChange"
+        @update:items-per-page="onItemsPerPageChange"
+        @update:sort="onSortChange"  
+      >
         <template #rows="{ items }">
-          <DatasetRow v-for="dataset in items" :key="dataset.id" :dataset="dataset" />
+          <DatasetRow
+            v-for="dataset in items"
+            :key="dataset.id"
+            :dataset="dataset"
+          />
         </template>
       </BaseTable>
     </v-card>
   </v-container>
 </template>
-
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
@@ -45,33 +77,27 @@ const store = useStore();
 const searchQuery = ref("");
 const loading = ref(false);
 
-// Pagination state for the table
 const page = ref(1);
 const itemsPerPage = ref(10);
 const totalItems = ref(0);
 
-// Raw datasets & pagination from store
+const sortKey = ref(null);        
+const sortDirection = ref(null);  
+
 const datasets = computed(() => store.getters["dataset/datasets"] || []);
 const pagination = computed(() => store.getters["dataset/pagination"] || {});
 
-// Filtered by search query (on current page data)
-const filteredDatasets = computed(() => {
-  if (!searchQuery.value) return datasets.value;
+const filteredDatasets = computed(() => datasets.value);
 
-  const q = searchQuery.value.toLowerCase();
-
-  return datasets.value.filter((d) =>
-    Object.values(d).join(" ").toLowerCase().includes(q)
-  );
-});
-
-// Fetch from server with current pagination
 async function fetchFromServer() {
   loading.value = true;
   try {
     await store.dispatch("dataset/fetchDatasets", {
       page: page.value,
-      pageSize: itemsPerPage.value, 
+      pageSize: itemsPerPage.value,
+      sortBy: sortKey.value,          
+      sortDirection: sortDirection.value, 
+      search: searchQuery.value || null,
     });
 
     // Sync pagination from store
@@ -98,7 +124,28 @@ watch([page, itemsPerPage], () => {
   fetchFromServer();
 });
 
-// Table column definitions 
+// Refetch when search changes 
+watch(searchQuery, () => {
+  page.value = 1;          
+  fetchFromServer();
+});
+
+function onPageChange(newPage) {
+  page.value = newPage;        
+}
+
+function onItemsPerPageChange(newSize) {
+  itemsPerPage.value = newSize;
+  page.value = 1;              
+}
+
+function onSortChange({ key, direction }) {
+  sortKey.value = key;
+  sortDirection.value = direction;
+  page.value = 1;              
+  fetchFromServer();           
+}
+
 const columns = [
   { label: "Name", key: "name", cols: 2, sortable: true },
   { label: "Description", key: "description", cols: 2 },
@@ -110,9 +157,7 @@ const columns = [
 ];
 </script>
 
-
 <style scoped>
-
 .search-clean {
   min-width: 140px;
   max-width: 280px;
@@ -133,3 +178,4 @@ const columns = [
   font-size: 32px;
 }
 </style>
+

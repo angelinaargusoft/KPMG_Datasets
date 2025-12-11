@@ -13,9 +13,22 @@ export const uploadDatasetFile = async (uuid, file) => {
   return res.data;
 };
 
-export const getDatasetFiles = async (uuid, { page = 1, pageSize = 10 } = {}) => {
+export const getDatasetFiles = async (
+  uuid,
+  { page = 1, pageSize = 10, sortBy, sortDirection, search } = {}
+) => {
+  const params = {
+    page,
+    pageSize,
+  };
+
+  // only send if provided
+  if (sortBy) params.sortBy = sortBy;
+  if (sortDirection) params.sortDirection = sortDirection;
+  if (search) params.search = search; 
+
   const res = await api.get(`/datasets/${uuid}/files`, {
-    params: { page, pageSize },
+    params,
   });
 
   return {
@@ -28,3 +41,4 @@ export const deleteDatasetFile = async (datasetUUID, uploadUUID) => {
   const res = await api.delete(`/datasets/${datasetUUID}/files/${uploadUUID}`);
   return res.data;
 };
+

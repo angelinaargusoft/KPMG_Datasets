@@ -16,7 +16,6 @@ async function uploadDatasetFile(req, res, next) {
       datasetUUID,
       file
     );
-
     res.status(201).json({
       message: "File uploaded successfully",
       upload: result,
@@ -29,15 +28,23 @@ async function uploadDatasetFile(req, res, next) {
 async function getDatasetFiles(req, res, next) {
   try {
     const datasetUUID = req.params.uuid;
-    const { page = 1, pageSize = 10 } = req.query;
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = null,
+      sortDirection = null,
+      search = null
+    } = req.query;
 
     const { data, pagination } =
       await DatasetUploadService.getFilesForDataset(
         datasetUUID,
         Number(page),
-        Number(pageSize)
+        Number(pageSize),
+        sortBy,
+        sortDirection,
+        search
       );
-
     res.json({
       files: data,
       pagination,
@@ -47,13 +54,12 @@ async function getDatasetFiles(req, res, next) {
   }
 }
 
-
 async function deleteDatasetFile(req, res, next) {
   try {
     const { uploadUUID } = req.params;
     const result = await DatasetUploadService.deleteUploadedFile(uploadUUID);
 
-    res.json(result); 
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -65,3 +71,4 @@ module.exports = {
   getDatasetFiles,
   deleteDatasetFile,
 };
+

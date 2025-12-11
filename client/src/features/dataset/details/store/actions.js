@@ -12,6 +12,9 @@ const actions = {
     let datasetUUID;
     let page = 1;
     let pageSize = 10;
+    let sortBy = null;
+    let sortDirection = null;
+    let search = null; 
 
     if (typeof payload === "string") {
       datasetUUID = payload;
@@ -19,16 +22,28 @@ const actions = {
       datasetUUID = payload.datasetUUID;
       page = payload.page ?? 1;
       pageSize = payload.pageSize ?? 10;
+      sortBy = payload.sortBy ?? null;
+      sortDirection = payload.sortDirection ?? null;
+      search = payload.search ?? null; 
     }
 
     try {
       const { files, pagination } = await getDatasetFiles(datasetUUID, {
         page,
         pageSize,
+        sortBy,
+        sortDirection,
+        search, 
       });
 
       commit("setFiles", files);
-      commit("setPagination", pagination);
+      commit("setPagination", {
+        ...pagination,
+        sortBy,
+        sortDirection,
+        search,
+      });
+
       return files;
     } catch (err) {
       commit("setError", err.message || "Failed to fetch dataset files");
@@ -52,8 +67,17 @@ const actions = {
 
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
-
-      await dispatch("fetchDatasetFiles", { datasetUUID, page, pageSize });
+      const sortBy = state.pagination?.sortBy || null;
+      const sortDirection = state.pagination?.sortDirection || null;
+      const search = state.pagination?.search || null; 
+      await dispatch("fetchDatasetFiles", {
+        datasetUUID,
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        search,
+      });
       return true;
     } catch (err) {
       commit("setError", err.message || "Failed to upload file");
@@ -75,8 +99,18 @@ const actions = {
 
       const page = state.pagination?.page || 1;
       const pageSize = state.pagination?.pageSize || 10;
+      const sortBy = state.pagination?.sortBy || null;
+      const sortDirection = state.pagination?.sortDirection || null;
+      const search = state.pagination?.search || null; 
 
-      await dispatch("fetchDatasetFiles", { datasetUUID, page, pageSize });
+      await dispatch("fetchDatasetFiles", {
+        datasetUUID,
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        search,
+      });
       return true;
     } catch (err) {
       commit("setError", err.message || "Failed to delete file");
@@ -94,3 +128,4 @@ const actions = {
 };
 
 export default actions;
+

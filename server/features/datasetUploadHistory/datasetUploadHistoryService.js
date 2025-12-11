@@ -8,7 +8,6 @@ const {
 const DatasetUploadHistoryRepository = require("./datasetUploadHistoryRepository");
 
 async function uploadFileForDataset(datasetUUID, file) {
-
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) {
     throw new Error(`Dataset with UUID ${datasetUUID} not found`);
@@ -32,10 +31,11 @@ async function uploadFileForDataset(datasetUUID, file) {
     );
   }
 
-  const connectionString = await DatasetService.buildBlobConnectionStringFromEndpoint(endpoint);
+  const connectionString =
+    await DatasetService.buildBlobConnectionStringFromEndpoint(endpoint);
 
   const containerName = dataset.uuid.toLowerCase();
-  const blobName = file.originalname; 
+  const blobName = file.originalname;
 
   const uploadResult = await uploadBufferToContainer(
     connectionString,
@@ -62,7 +62,14 @@ async function uploadFileForDataset(datasetUUID, file) {
   };
 }
 
-async function getFilesForDataset(datasetUUID, page = 1, pageSize = 10) {
+async function getFilesForDataset(
+  datasetUUID,
+  page = 1,
+  pageSize = 10,
+  sortBy = null,
+  sortDirection = null,
+  search = null          
+) {
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) {
     throw new Error(`Dataset with UUID ${datasetUUID} not found`);
@@ -72,21 +79,24 @@ async function getFilesForDataset(datasetUUID, page = 1, pageSize = 10) {
     await DatasetUploadHistoryRepository.getUploadsByDatasetUUIDPaginated(
       datasetUUID,
       page,
-      pageSize
+      pageSize,
+      sortBy,
+      sortDirection,
+      search         
     );
 
   return uploadsPage;
 }
 
 async function deleteUploadedFile(uploadUUID) {
-
-  const upload = await DatasetUploadHistoryRepository.getUploadByUUID(uploadUUID);
+  const upload = await DatasetUploadHistoryRepository.getUploadByUUID(
+    uploadUUID
+  );
   if (!upload) {
     throw new Error(`Upload record with UUID ${uploadUUID} not found`);
   }
 
-  const blobName =
-    upload.filename || upload.name;
+  const blobName = upload.filename || upload.name;
 
   const { endpointUUID, datasetUUID } = upload;
 
@@ -99,17 +109,19 @@ async function deleteUploadedFile(uploadUUID) {
 
   const containerName = dataset.uuid.toLowerCase();
 
-  const endpoint = await EndpointServerService.getEndpointServerByUUID(endpointUUID);
+  const endpoint = await EndpointServerService.getEndpointServerByUUID(
+    endpointUUID
+  );
   if (!endpoint) throw new Error("Endpoint not found");
 
-  const connectionString = await DatasetService.buildBlobConnectionStringFromEndpoint(endpoint);
+  const connectionString =
+    await DatasetService.buildBlobConnectionStringFromEndpoint(endpoint);
 
   await deleteBlobFromContainer(connectionString, containerName, blobName);
   await DatasetUploadHistoryRepository.deleteUpload(uploadUUID);
 
   return { message: "File and upload record deleted successfully" };
 }
-
 
 module.exports = {
   uploadFileForDataset,

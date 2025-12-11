@@ -9,14 +9,23 @@ async function createDataset(req, res, next) {
 }
 async function getAllDatasets(req, res, next) {
   try {
-    const { page = 1, pageSize = 10 } = req.query;
+    // 🔹 read sorting + pagination from query
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = null,
+      sortDirection = null,
+      search = null
+    } = req.query;
 
     const result = await DatasetService.getDatasetsPaginated(
-      page,
-      pageSize
+      Number(page),
+      Number(pageSize),
+      sortBy,
+      sortDirection,
+      search
     );
-
-    res.json(result);
+    res.json(result); // { data, pagination }
   } catch (err) {
     next(err);
   }
