@@ -9,7 +9,6 @@ async function createDataset(req, res, next) {
 }
 async function getAllDatasets(req, res, next) {
   try {
-    // 🔹 read sorting + pagination from query
     const {
       page = 1,
       pageSize = 10,

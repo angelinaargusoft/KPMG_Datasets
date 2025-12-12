@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
+
 const DatasetService = require("../dataset/datasetService");
 const EndpointServerService = require("../endpointServer/endpointServerService");
 const {
@@ -6,6 +8,17 @@ const {
   deleteBlobFromContainer,
 } = require("../dataset/blobStorageService");
 const DatasetUploadHistoryRepository = require("./datasetUploadHistoryRepository");
+
+function countLines(buffer) {
+  if (!buffer || buffer.length === 0) return 0;
+
+  // Convert buffer to string. Safe for text files.
+  const str = buffer.toString("utf8");
+
+  // Count all newline variants
+  const matches = str.match(/\r\n|\r|\n/g);
+  return matches ? matches.length : 1; // 1 line minimal if text exists
+}
 
 async function uploadFileForDataset(datasetUUID, file) {
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
@@ -37,6 +50,38 @@ async function uploadFileForDataset(datasetUUID, file) {
   const containerName = dataset.uuid.toLowerCase();
   const blobName = file.originalname;
 
+  let md5hash = null;
+  let sha256hash = null;
+  try {
+    const md5 = crypto.createHash("md5");
+    const sha256 = crypto.createHash("sha256");
+
+    const buf = file.buffer || Buffer.from([]);
+    md5.update(buf);
+    sha256.update(buf);
+
+    md5hash = md5.digest("hex");
+    sha256hash = sha256.digest("hex");
+  } catch (err) {
+    console.warn("Hashing failed for upload buffer:", err);
+  }
+
+  let lineCount = null;
+  try {
+    // Only count for text-based content types
+    const isTextFile =
+      file.mimetype.startsWith("text/") ||
+      file.mimetype.includes("csv") ||
+      file.mimetype.includes("json") ||
+      file.originalname.endsWith(".log");
+
+    if (isTextFile) {
+      lineCount = countLines(file.buffer);
+    }
+  } catch (err) {
+    console.warn("Line count failed:", err);
+  }
+
   const uploadResult = await uploadBufferToContainer(
     connectionString,
     containerName,
@@ -51,6 +96,9 @@ async function uploadFileForDataset(datasetUUID, file) {
     endpointUUID: endpoint.uuid,
     filename: file.originalname,
     fileSize: file.size,
+    md5: md5hash,
+    sha256: sha256hash,
+    lineCount: lineCount,
   });
 
   return {
@@ -59,6 +107,9 @@ async function uploadFileForDataset(datasetUUID, file) {
     blobUrl: uploadResult.url,
     container: uploadResult.container,
     blobName: uploadResult.blobName,
+    md5: md5hash,
+    sha256: sha256hash,
+    lineCount
   };
 }
 

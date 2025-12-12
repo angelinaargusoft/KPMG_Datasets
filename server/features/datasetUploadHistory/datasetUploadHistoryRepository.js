@@ -6,11 +6,15 @@ async function logDatasetUpload({
   endpointUUID,
   filename,
   fileSize,
+  md5 = null,
+  sha256 = null,
+  lineCount = null,
+  filepath = null
 }) {
   const query = `
-    INSERT INTO datasetUploadHistory
-      (uuid, dataset, endpoint, filename, uploadedAt, fileSize)
-    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP(6), ?)
+    INSERT INTO DatasetUploadHistory
+      (uuid, dataset, endpoint, filename, uploadedAt, fileSize, MD5, SHA256, lineCount, filepath)
+    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP(6), ?, ?, ?, ?, ?)
   `;
 
   const params = [
@@ -19,6 +23,10 @@ async function logDatasetUpload({
     endpointUUID || null,
     filename || null,
     fileSize != null ? String(fileSize) : null,
+    md5,
+    sha256,
+    lineCount != null ? Number(lineCount) : null,
+    filepath
   ];
 
   await pool.execute(query, params);
@@ -43,6 +51,9 @@ async function getUploadsByDatasetUUIDPaginated(
     size: "fileSize",
     uploadedAt: "uploadedAt",
     endpointUUID: "endpoint",
+    md5: "MD5",
+    sha256: "SHA256",
+    lineCount: "lineCount",
   };
 
   // Resolve column safely
@@ -67,7 +78,7 @@ async function getUploadsByDatasetUUIDPaginated(
   // Count total items
   const countQuery = `
     SELECT COUNT(*) AS total
-    FROM datasetUploadHistory
+    FROM DatasetUploadHistory
     ${whereClause}
   `;
   const [countRows] = await pool.execute(countQuery, whereParams);
@@ -80,8 +91,12 @@ async function getUploadsByDatasetUUIDPaginated(
       filename,
       fileSize,
       uploadedAt,
-      endpoint
-    FROM datasetUploadHistory
+      endpoint,
+      MD5,
+      SHA256,
+      lineCount,
+      filepath
+    FROM DatasetUploadHistory
     ${whereClause}
     ORDER BY ${sortColumn} ${direction}
     LIMIT ?, ?
@@ -95,6 +110,10 @@ async function getUploadsByDatasetUUIDPaginated(
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,
     endpointUUID: row.endpoint,
+    md5: row.MD5 || null,
+    sha256: row.SHA256 || null,
+    lineCount: row.lineCount ? Number(row.lineCount) || null : null,
+    filepath: row.filepath || null,
   }));
 
   return {
@@ -122,8 +141,12 @@ async function getUploadByUUID(uploadUUID) {
       filename,
       fileSize,
       uploadedAt,
-      endpoint
-    FROM datasetUploadHistory
+      endpoint,
+      MD5,
+      SHA256,
+      lineCount,
+      filepath
+    FROM DatasetUploadHistory
     WHERE uuid = ?
     LIMIT 1
   `;
@@ -139,12 +162,16 @@ async function getUploadByUUID(uploadUUID) {
     size: row.fileSize ? Number(row.fileSize) || null : null,
     uploadedAt: row.uploadedAt,
     endpointUUID: row.endpoint,
+    md5: row.MD5 || null,
+    sha256: row.SHA256 || null,
+    lineCount: row.lineCount ? Number(row.lineCount) || null : null,
+    filepath: row.filepath || null,
   };
 }
 
 async function deleteUpload(uploadUUID) {
   const query = `
-    DELETE FROM datasetUploadHistory
+    DELETE FROM DatasetUploadHistory
     WHERE uuid = ?
   `;
 
