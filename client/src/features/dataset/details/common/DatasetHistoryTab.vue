@@ -6,13 +6,12 @@
       style="gap: 12px"
     >
       <v-text-field
-        v-model="historySearchQuery"
+        v-model="searchQuery"
         placeholder="Search history"
         density="compact"
         variant="outlined"
         class="file-search"
         hide-details
-        @keyup.enter="triggerSearch"
         aria-label="Search upload history"
       >
         <template #prepend-inner>
@@ -23,24 +22,45 @@
 
     <!-- HISTORY TABLE -->
     <BaseTable
-      :columns="historyColumns"
+      :columns="columns"
       :data="tableItems"
-      :loading="loadingHistory"
-      empty-text="No upload history found"
-      :server-pagination="true"
-      :page="historyPage"
-      :items-per-page="historyItemsPerPage"
-      :total-items="historyTotalItems"
-      @update:page="handleHistoryPageChange"
-      @update:items-per-page="handleHistoryItemsPerPageChange"
-      @update:sort="handleHistorySortChange"
+      :page="page"
+      :items-per-page="itemsPerPage"
+      :total-items="totalItems"
+      :loading="loading"
+      @update:page="onPageChange"
+      @update:itemsPerPage="onItemsPerPageChange"
+      @update:sort="onSortChange"
     >
-      <template #rows="{ items }">
-        <HistoryRow
-          v-for="row in items"
-          :key="row.uuid || row.id || row.fileName || row.filename"
-          :row="row"
-        />
+      <template #item.uploadedAt="{ item }">
+        <div class="d-flex flex-column">
+          <span>{{ formatDate(item.uploadedAt).date }}</span>
+          <span>
+            {{ formatDate(item.uploadedAt).time }}
+          </span>
+        </div>
+      </template>
+      <template #item.fileName="{ item }">
+        {{ item.name }}
+      </template>
+      <template #item.sha256="{ item }">
+        {{ item.sha256 }}
+      </template>
+
+      <template #item.md5="{ item }">
+        {{ item.md5 }}
+      </template>
+
+      <template #item.lineCount="{ item }">
+        {{ item.lineCount }}
+      </template>
+
+      <template #item.sizeBytes="{ item }">
+        {{ formatSize(item.sizeBytes ?? item.size) }}
+      </template>
+
+      <template #item.uploadedTo="{ item }">
+        {{ item.uploadedTo }}
       </template>
     </BaseTable>
   </div>
@@ -50,7 +70,6 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useStore } from "vuex";
 import BaseTable from "@/components/common/BaseTable.vue";
-import HistoryRow from "./HistoryRow.vue";
 
 const props = defineProps({
   datasetUuid: {
@@ -61,98 +80,117 @@ const props = defineProps({
 
 const store = useStore();
 
-const historySearchQuery = ref("");
+const searchQuery = ref("");
 
-const historyPage = ref(1);
-const historyItemsPerPage = ref(10);
+const page = ref(1);
+const itemsPerPage = ref(10);
 
-const historySortKey = ref(null);
-const historySortDirection = ref(null);
+const sortKey = ref(null);
+const sortDirection = ref(null);
 
-const historyPagination = computed(
+const pagination = computed(
   () => store.getters["datasetFileUpload/pagination"] || null
 );
 
 watch(
-  historyPagination,
+  pagination,
   (val) => {
     if (!val) return;
-    historyPage.value = val.page || 1;
-    historyItemsPerPage.value = val.pageSize || 10;
+    page.value = val.page || 1;
+    itemsPerPage.value = val.pageSize || 10;
   },
   { immediate: true }
 );
 
-const historyTotalItems = computed(() => historyPagination.value?.totalItems || 0);
-const blobList = computed(() => store.getters["datasetFileUpload/files"] || []);
-const loadingHistory = computed(() => store.getters["datasetFileUpload/loading"]);
+const totalItems = computed(() => pagination.value?.totalItems || 0);
+const files = computed(() => store.getters["datasetFileUpload/files"] || []);
+const loading = computed(() => store.getters["datasetFileUpload/loading"]);
+const tableItems = computed(() => files.value);
 
-const tableItems = computed(() => blobList.value);
-
-const historyColumns = [
-  { label: "Uploaded At", key: "uploadedAt", cols: 2, sortable: true },
-  { label: "File Name", key: "fileName", cols: 2, sortable: true },
-  { label: "SHA256", key: "sha256", cols: 1, sortable: true },
-  { label: "MD5", key: "md5", cols: 1, sortable: true },
-  { label: "Line Count", key: "lineCount", cols: 2, sortable: true },
-  { label: "Size (bytes)", key: "sizeBytes", cols: 2, sortable: true },
-  { label: "Uploaded to", key: "uploadedTo", cols: 2, sortable: true },
+const columns = [
+  { label: "Uploaded At", key: "uploadedAt", sortable: true },
+  { label: "File Name", key: "fileName", sortable: true },
+  { label: "SHA256", key: "sha256", sortable: true },
+  { label: "MD5", key: "md5", sortable: true },
+  { label: "Line Count", key: "lineCount", sortable: true },
+  { label: "Size (bytes)", key: "sizeBytes", sortable: true },
+  { label: "Uploaded to", key: "uploadedTo", sortable: true },
 ];
 
-async function loadHistoryList(
-  page = historyPage.value,
-  pageSize = historyItemsPerPage.value,
-  sortKey = historySortKey.value,
-  sortDirection = historySortDirection.value,
-  search = historySearchQuery.value
+async function fetchFromServer(
+  newPage = page.value,
+  newPageSize = itemsPerPage.value,
+  newSortKey = sortKey.value,
+  newSortDirection = sortDirection.value,
+  search = searchQuery.value
 ) {
   await store.dispatch("datasetFileUpload/fetchDatasetFiles", {
     datasetUUID: props.datasetUuid,
-    page,
-    pageSize,
-    sortBy: sortKey,
-    sortDirection: sortDirection,
+    page: newPage,
+    pageSize: newPageSize,
+    sortBy: newSortKey,
+    sortDirection: newSortDirection,
     search: search || null,
   });
 }
 
-async function handleHistoryPageChange(newPage) {
-  historyPage.value = newPage;
-  await loadHistoryList(newPage, historyItemsPerPage.value);
+async function onPageChange(newPage) {
+  page.value = newPage;
+  await fetchFromServer(newPage, itemsPerPage.value);
 }
 
-async function handleHistoryItemsPerPageChange(newItemsPerPage) {
-  historyItemsPerPage.value = newItemsPerPage;
-  historyPage.value = 1;
-  await loadHistoryList(1, newItemsPerPage);
+async function onItemsPerPageChange(newSize) {
+  itemsPerPage.value = newSize;
+  page.value = 1;
+  await fetchFromServer(1, newSize);
 }
 
-async function handleHistorySortChange({key, direction}) {
-  historySortKey.value = key;
-  historySortDirection.value = direction;
-  historyPage.value = 1;
-
-  await loadHistoryList(1, historyItemsPerPage.value, key, direction);
+async function onSortChange({ key, direction }) {
+  sortKey.value = key;
+  sortDirection.value = direction;
+  page.value = 1;
+  await fetchFromServer(1, itemsPerPage.value, key, direction);
 }
 
-function triggerSearch() {
-  if (searchDebounce) clearTimeout(searchDebounce);
-  searchDebounce = null;
-  historyPage.value = 1;
-  loadHistoryList(1, historyItemsPerPage.value, historySortKey.value, historySortDirection.value, historySearchQuery.value || null);
-}
-
-let searchDebounce = null;
-watch(historySearchQuery, async (val) => {
-  if (searchDebounce) clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(async () => {
-    historyPage.value = 1;
-    await loadHistoryList(1, historyItemsPerPage.value);
-  }, 500);
+watch(searchQuery, () => {
+  debouncedFetchFromServer();
 });
 
-onMounted(async () => {
-  await loadHistoryList(1, historyItemsPerPage.value);
+function debounce(fn, delay = 400) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const debouncedFetchFromServer = debounce(() => {
+  page.value = 1;
+  fetchFromServer();
+}, 400);
+
+function formatDate(ts) {
+  if (!ts) return { date: "", time: "" };
+  const d = new Date(ts);
+  return {
+    date: d.toLocaleDateString("en-GB"),
+    time: d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  };
+}
+
+function formatSize(bytes) { 
+  if (!bytes && bytes !== 0) return "—"; 
+  if (bytes < 1024) return `${bytes} B`; 
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`; 
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`; 
+}
+
+onMounted(() => {
+  fetchFromServer(1, itemsPerPage.value);
 });
 </script>
 

@@ -1,249 +1,191 @@
 <template>
   <component
     :is="embedded ? 'div' : 'v-card'"
-    class="pa-0 base-table"
-    :class="{ 'elevation-1': !embedded }"
-    v-bind="embedded ? {} : { outlined: true }"
+    class="pa-0"
+    v-bind="embedded ? {} : { variant: 'outlined' }"
   >
-    <!-- Header Row -->
-    <v-row class="font-weight-medium py-3 px-4 bg-light" no-gutters>
-      <v-col
+    <component
+      :is="isServerSide ? VDataTableServer : VDataTable"
+      :headers="headers"
+      :items="displayItems"
+      :loading="loading"
+      :page="effectivePage"
+      :items-per-page="effectiveItemsPerPage"
+      :items-length="isServerSide ? totalItems : undefined"
+    >
+      <!-- CUSTOM HEADER  -->
+      <template
         v-for="col in columns"
-        :key="col.key || col.label"
-        :cols="col.cols || 2"
-        :class="[
-          col.headerClass,
-          col.sortable ? 'sortable-header' : ''
-        ]"
-        @click="onHeaderClick(col)"
+        :key="col.key"
+        #[`header.${col.key}`]="{ column }"
       >
-        <div class="header-content">
-          <span>{{ col.label }}</span>
-          <span
-            v-if="col.sortable"
-            class="material-symbols-outlined sort-icon"
-            :class="{ active: sortKey === col.key && sortDirection }"
-          >
-            {{ getSortIcon(col) }}
+        <span
+          v-if="col.sortable"
+          class="d-inline-flex align-center cursor-pointer"
+          @click="onSort(column)"
+        >
+          {{ column.title }}
+          <span class="material-symbols-outlined ms-1">
+            {{ sortIcon(column.key) }}
           </span>
+        </span>
+
+        <span v-else>
+          {{ column.title }}
+        </span>
+      </template>
+
+      <!-- CELL SLOTS -->
+      <template
+        v-for="col in columns"
+        :key="col.key"
+        #[`item.${col.key}`]="slotProps"
+      >
+        <slot :name="`item.${col.key}`" v-bind="slotProps">
+          {{ slotProps.value }}
+        </slot>
+      </template>
+
+      <!-- EMPTY -->
+      <template #no-data>
+        <div class="text-center py-8 text-grey">
+          No records found.
         </div>
-      </v-col>
+      </template>
 
-      <v-col v-if="showActions" :cols="actionsCols">
-        Actions
-      </v-col>
-    </v-row>
+      <!-- LOADING -->
+      <template #loading>
+        <div class="text-center py-6">
+          <v-progress-circular indeterminate />
+        </div>
+      </template>
 
-    <!-- Body -->
-    <slot name="rows" :items="sortedItems" :columns="columns" />
-
-    <!-- Only hide rows — NOT pagination -->
-    <div v-if="!loading && !hasData" class="text-center py-8 text-grey">
-      {{ emptyText }}
-      <v-divider />
-    </div>
-
-    <!-- Always show pagination when serverPagination=true -->
-    <BaseTablePagination
-      v-if="serverPagination"
-      :page="page"
-      :items-per-page="itemsPerPage"
-      :total-items="totalItems"
-      @update:page="emit('update:page', $event)"
-      @update:items-per-page="emit('update:itemsPerPage', $event)"
-    />
-
-    <div v-if="loading" class="text-center py-8">
-      <v-progress-circular indeterminate />
-    </div>
+      <!-- FOOTER -->
+      <template #bottom>
+        <BaseTablePagination
+          :page="effectivePage"
+          :items-per-page="effectiveItemsPerPage"
+          :total-items="isServerSide ? totalItems : displayItems.length"
+          @update:page="onPageChange"
+          @update:itemsPerPage="onItemsPerPageChange"
+        />
+      </template>
+    </component>
   </component>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import BaseTablePagination from "@/components/common/BaseTablePagination.vue";
+import { computed, ref, watch } from "vue";
+import { VDataTable, VDataTableServer } from "vuetify/components/VDataTable";
+import BaseTablePagination from "./BaseTablePagination.vue";
 
 const props = defineProps({
-  columns: {
-    type: Array,
-    required: true,
-  },
-  data: {
-    type: Array,
-    default: () => [],
-  },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  showActions: {
-    type: Boolean,
-    default: false,
-  },
-  emptyText: {
-    type: String,
-    default: "No records found.",
-  },
-  actionsCols: {
-    type: Number,
-    default: 2,
-  },
-  serverPagination: {
-    type: Boolean,
-    default: false,
-  },
-  page: {
-    type: Number,
-    default: 1,
-  },
-  itemsPerPage: {
-    type: Number,
-    default: 10,
-  },
-  totalItems: {
-    type: Number,
-    default: 0,
-  },
-  embedded: {
-    type: Boolean,
-    default: false,
-  },
+  columns: { type: Array, required: true },
+  data: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+  page: { type: Number, default: 1 },
+  itemsPerPage: { type: Number, default: 10 },
+  totalItems: { type: Number, default: 0 },
+  embedded: { type: Boolean, default: false },
 });
 
-// 🔹 NEW: emit sort info to parent
 const emit = defineEmits([
   "update:page",
   "update:itemsPerPage",
-  "update:sort", // { key, direction }
+  "update:sort",
 ]);
 
-// ---------- state ----------
-const sortKey = ref(null);        // current sorted column key
-const sortDirection = ref(null);  // "asc" | "desc" | null
+const isServerSide = computed(() => props.totalItems > 0);
 
-const hasData = computed(
-  () => Array.isArray(props.data) && props.data.length > 0
+const clientPage = ref(1);
+const clientItemsPerPage = ref(props.itemsPerPage);
+
+const effectivePage = computed(() =>
+  isServerSide.value ? props.page : clientPage.value
 );
 
-// ---------- sorting logic ----------
-function onHeaderClick(col) {
-  if (!col.sortable || !col.key) return;
+const effectiveItemsPerPage = computed(() =>
+  isServerSide.value ? props.itemsPerPage : clientItemsPerPage.value
+);
 
-  // toggle local sort state (for icons + client mode)
-  if (sortKey.value === col.key) {
-    sortDirection.value =
-      sortDirection.value === "asc" ? "desc" : "asc";
+function onPageChange(page) {
+  if (isServerSide.value) {
+    emit("update:page", page);
   } else {
-    sortKey.value = col.key;
-    sortDirection.value = "asc";
+    clientPage.value = page;
   }
-
-  // notify parent so backend can sort
-  if (sortDirection.value) {
-    emit("update:sort", {
-      key: sortKey.value,
-      direction: sortDirection.value, // "asc" | "desc"
-    });
-  } 
 }
 
-const sortedItems = computed(() => {
-  const items = props.data || [];
+function onItemsPerPageChange(ipp) {
+  if (isServerSide.value) {
+    emit("update:itemsPerPage", ipp);
+  } else {
+    clientItemsPerPage.value = ipp;
+    clientPage.value = 1;
+  }
+}
 
-  // when serverPagination is true, assume backend already returns sorted data.
-  if (props.serverPagination) {
-    return items;
+const sortState = ref(null); // { key, order }
+
+function onSort(column) {
+  if (!column.sortable) return;
+
+  if (!sortState.value || sortState.value.key !== column.key) {
+    sortState.value = { key: column.key, order: "asc" };
+  } else {
+    sortState.value = {
+      key: column.key,
+      order: sortState.value.order === "asc" ? "desc" : "asc",
+    };
   }
 
-  if (!sortKey.value || !sortDirection.value) {
-    return items;
+  if (isServerSide.value) {
+    emit("update:sort", {
+      key: sortState.value.key,
+      direction: sortState.value.order,
+    });
   }
+}
 
-  const key = sortKey.value;
-  const dir = sortDirection.value;
-
-  return [...items].sort((a, b) => {
-    const aVal = a[key];
-    const bVal = b[key];
-
-    if (aVal == null && bVal == null) return 0;
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-
-    let result;
-
-    if (typeof aVal === "number" && typeof bVal === "number") {
-      result = aVal - bVal;
-    } else {
-      const aDate = Date.parse(aVal);
-      const bDate = Date.parse(bVal);
-
-      if (!isNaN(aDate) && !isNaN(bDate)) {
-        result = aDate - bDate;
-      } else {
-        result = String(aVal).localeCompare(String(bVal));
-      }
-    }
-
-    return dir === "asc" ? result : -result;
-  });
-});
-
-function getSortIcon(col) {
-  // not sortable? shouldn't be called but safe default
-  if (!col.sortable) return "arrow_drop_up";
-
-  // if this column is not the active sort - light default icon
-  if (sortKey.value !== col.key || !sortDirection.value) {
+function sortIcon(key) {
+  if (!sortState.value || sortState.value.key !== key) {
     return "arrow_drop_up";
   }
-
-  // active column: pick icon by direction
-  return sortDirection.value === "asc"
+  return sortState.value.order === "asc"
     ? "arrow_drop_up"
     : "arrow_drop_down";
 }
+
+const displayItems = computed(() => {
+  if (isServerSide.value || !sortState.value) {
+    return props.data;
+  }
+
+  const { key, order } = sortState.value;
+
+  return [...props.data].sort((a, b) => {
+    if (a[key] < b[key]) return order === "asc" ? -1 : 1;
+    if (a[key] > b[key]) return order === "asc" ? 1 : -1;
+    return 0;
+  });
+});
+
+const headers = computed(() =>
+  props.columns.map((col) => ({
+    title: col.label,
+    key: col.key,
+    sortable: !!col.sortable,
+    align: col.align,
+  }))
+);
+
+watch(
+  () => props.data,
+  () => {
+    if (!isServerSide.value) return;
+    // optional: keep or reset server sort
+  }
+);
 </script>
 
-<style scoped>
-.base-table {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.bg-light {
-  background-color: #f9fafb;
-}
-
-.text-grey {
-  color: #9e9e9e;
-}
-
-.sortable-header {
-  cursor: pointer;
-}
-
-.header-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-/* default weak icon */
-.sort-icon {
-  font-size: 20px;
-  opacity: 0.3;
-  transition: opacity 0.2s, color 0.2s;
-}
-
-.sort-icon.active {
-  opacity: 1;
-  color: #424242;
-}
-
-.sort-icon:hover {
-  opacity: 1;
-  color: #424242;
-}
-</style>
 

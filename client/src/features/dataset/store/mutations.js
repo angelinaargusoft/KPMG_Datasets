@@ -15,14 +15,22 @@ const mutations = {
     state.error = err;
   },
 
-  // merge pagination updates instead of overwriting everything
   setPagination(state, pagination) {
     state.pagination = {
       ...state.pagination,
       ...pagination,
     };
   },
+
+  setBlobFiles(state, files) {
+    state.blobFiles = files;
+  },
+
+  resetBlobFiles(state) {
+    state.blobFiles = [];
+  },
 };
 
 export default mutations;
+
 

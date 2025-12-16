@@ -8,6 +8,7 @@ const {
   getDatasetByUUID,
   updateDataset,
   deleteDataset,
+  listDatasetBlobFiles
 } = require("./datasetController");
 
 const {
@@ -20,6 +21,7 @@ const {
 router.post("/", createDataset);
 router.get("/", getAllDatasets);
 router.get("/uuid/:uuid", getDatasetByUUID);
+router.get("/uuid/:uuid/blob-files", listDatasetBlobFiles);
 router.get("/:id", getDatasetById);
 router.post("/:uuid/upload", upload.single("file"), uploadDatasetFile);
 router.get("/:uuid/files", getDatasetFiles);

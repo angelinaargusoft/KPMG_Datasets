@@ -7,7 +7,7 @@
         class="action-btn"
         :color="resolved.color"
         :variant="variant"
-        @click="$emit('click')"
+        @click="$emit('click', $event)"
       >
         <span class="material-symbols-outlined">
           {{ resolved.icon }}
@@ -24,7 +24,7 @@
     class="action-btn"
     :color="resolved.color"
     :variant="variant"
-    @click="$emit('click')"
+    @click="$emit('click', $event)"
   >
     <span class="material-symbols-outlined">
       {{ resolved.icon }}

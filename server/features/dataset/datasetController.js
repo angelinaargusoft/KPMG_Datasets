@@ -63,6 +63,25 @@ async function deleteDataset(req, res, next) {
     next(err);
   }
 }
+
+async function listDatasetBlobFiles(req, res, next) {
+  try {
+    const { uuid } = req.params;
+
+    const files = await DatasetService.listDatasetBlobFiles({
+      datasetUUID: uuid,
+    });
+
+    res.json({
+      data: files,
+      totalItems: files.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 module.exports = {
   createDataset,
   getAllDatasets,
@@ -70,4 +89,5 @@ module.exports = {
   getDatasetByUUID,
   updateDataset,
   deleteDataset,
+  listDatasetBlobFiles
 };

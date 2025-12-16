@@ -5,6 +5,7 @@ import {
   createDataset,
   updateDataset,
   deleteDataset,
+  getDatasetBlobFiles
 } from "../list/services/datasetService";
 
 const actions = {
@@ -141,8 +142,25 @@ const actions = {
   resetCurrentDataset({ commit }) {
     commit("setCurrentDataset", null);
   },
+
+  async fetchDatasetBlobFiles({ commit }, { datasetUUID }) {
+    commit("setLoading", true);
+    commit("setError", null);
+
+    try {
+      const result = await getDatasetBlobFiles(datasetUUID);
+      commit("setBlobFiles", result.data);
+      return result.data;
+    } catch (err) {
+      commit("setError", err.message || "Failed to fetch blob files");
+      return null;
+    } finally {
+      commit("setLoading", false);
+    }
+  },
 };
 
 export default actions;
+
 
 

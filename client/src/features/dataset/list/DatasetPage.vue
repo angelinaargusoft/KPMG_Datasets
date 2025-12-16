@@ -6,7 +6,7 @@
         class="d-flex justify-space-between align-center px-4 py-4 flex-wrap"
       >
         <h2 class="text-h5 font-weight-600">Datasets</h2>
-      <!-- SEARCH BAR -->
+        <!-- SEARCH BAR -->
         <div
           class="d-flex align-center"
           style="gap: 12px; flex: 1; justify-content: flex-end"
@@ -36,9 +36,8 @@
           </v-btn>
         </div>
       </div>
-
       <!-- REUSABLE TABLE -->
-      <BaseTable
+      <!-- <BaseTable
         embedded
         :columns="columns"
         :data="filteredDatasets"
@@ -53,23 +52,78 @@
         @update:page="onPageChange"
         @update:items-per-page="onItemsPerPageChange"
         @update:sort="onSortChange"  
+      > -->
+      <BaseTable
+        :columns="columns"
+        :data="filteredDatasets"
+        :page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :loading="loading"
+        @update:page="page = $event"
+        @update:itemsPerPage="itemsPerPage = $event"
+        @update:sort="onSortChange"
       >
-        <template #rows="{ items }">
-          <DatasetRow
-            v-for="dataset in items"
-            :key="dataset.id"
-            :dataset="dataset"
-          />
+        <template #item.name="{ item }">
+          <span class="dataset-name" @click.stop="goToDetails(item)">
+            {{ item.name }}
+          </span>
+        </template>
+
+        <template #item.description="{ item }">
+          {{ item.description }}
+        </template>
+
+        <template #item.createdAt="{ item }">
+          <span>{{ formatDate(item.createdAt).date }}</span>
+          <span class="d-block">
+            {{ formatDate(item.createdAt).time }}
+          </span>
+        </template>
+
+        <template #item.createdBy> Angelina </template>
+
+        <template #item.storageType="{ item }">
+          {{ item.storageType }}
+        </template>
+
+        <template #item.enablev3="{ item }">
+          {{ item.enablev3 ? "V3" : "V2" }}
+        </template>
+
+        <template #item.actions="{ item }">
+          <ActionIconButton type="edit" @click.stop="editDataset(item)" />
+          <ActionIconButton type="manage" />
+          <ActionIconButton type="delete" @click.stop="confirmDelete(item)" />
         </template>
       </BaseTable>
     </v-card>
   </v-container>
+  <v-dialog v-model="deleteDialog" max-width="420">
+    <v-card>
+      <v-card-title class="text-h6 font-weight-medium">
+        Confirm Deletion
+      </v-card-title>
+
+      <v-card-text>
+        Are you sure you want to delete
+        <strong>{{ datasetToDelete?.name }}</strong
+        >?
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="deleteDialog = false"> Cancel </v-btn>
+        <v-btn color="error" @click="deleteDataset"> Delete </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
-import DatasetRow from "./DatasetRow.vue";
+import { useRouter } from "vue-router";
 import BaseTable from "@/components/common/BaseTable.vue";
 
 const store = useStore();
@@ -81,13 +135,37 @@ const page = ref(1);
 const itemsPerPage = ref(10);
 const totalItems = ref(0);
 
-const sortKey = ref(null);        
-const sortDirection = ref(null);  
+const sortKey = ref(null);
+const sortDirection = ref(null);
+
+const router = useRouter();
 
 const datasets = computed(() => store.getters["dataset/datasets"] || []);
 const pagination = computed(() => store.getters["dataset/pagination"] || {});
 
 const filteredDatasets = computed(() => datasets.value);
+
+const deleteDialog = ref(false);
+const datasetToDelete = ref(null);
+
+function confirmDelete(dataset) {
+  datasetToDelete.value = dataset;
+  deleteDialog.value = true;
+}
+
+async function deleteDataset() {
+  if (!datasetToDelete.value?.id) return;
+
+  try {
+    await store.dispatch("dataset/removeDataset", datasetToDelete.value.id);
+
+    // refresh table
+    await fetchFromServer();
+  } finally {
+    deleteDialog.value = false;
+    datasetToDelete.value = null;
+  }
+}
 
 async function fetchFromServer() {
   loading.value = true;
@@ -95,8 +173,8 @@ async function fetchFromServer() {
     await store.dispatch("dataset/fetchDatasets", {
       page: page.value,
       pageSize: itemsPerPage.value,
-      sortBy: sortKey.value,          
-      sortDirection: sortDirection.value, 
+      sortBy: sortKey.value,
+      sortDirection: sortDirection.value,
       search: searchQuery.value || null,
     });
 
@@ -124,36 +202,64 @@ watch([page, itemsPerPage], () => {
   fetchFromServer();
 });
 
-// Refetch when search changes 
+// Refetch when search changes
 watch(searchQuery, () => {
-  page.value = 1;          
-  fetchFromServer();
+  debouncedFetchFromServer();
 });
-
-function onPageChange(newPage) {
-  page.value = newPage;        
-}
-
-function onItemsPerPageChange(newSize) {
-  itemsPerPage.value = newSize;
-  page.value = 1;              
-}
 
 function onSortChange({ key, direction }) {
   sortKey.value = key;
   sortDirection.value = direction;
-  page.value = 1;              
-  fetchFromServer();           
+  page.value = 1;
+  fetchFromServer();
 }
 
+function goToDetails(dataset) {
+  router.push(`/admin/datasets/details/${dataset.uuid}`);
+}
+
+function editDataset(dataset) {
+  router.push(`/admin/datasets/${dataset.uuid}/edit`);
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return {
+    date: d.toLocaleDateString("en-GB"),
+    time: d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  };
+}
+
+function debounce(fn, delay = 300) {
+  let timeoutId;
+
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
+const debouncedFetchFromServer = debounce(() => {
+  page.value = 1;   
+  fetchFromServer();
+}, 400);
+
+
+
 const columns = [
-  { label: "Name", key: "name", cols: 2, sortable: true },
-  { label: "Description", key: "description", cols: 2 },
-  { label: "Created At", key: "createdAt", cols: 2, sortable: true },
-  { label: "Created By", key: "createdBy", cols: 1 },
-  { label: "Storage", key: "storageType", cols: 1, sortable: true },
-  { label: "Data Import Version", key: "enablev3", cols: 2, sortable: true },
-  // + Actions col from show-actions (2) = 12 total
+  { label: "Name", key: "name", sortable: true },
+  { label: "Description", key: "description" },
+  { label: "Created At", key: "createdAt", sortable: true },
+  { label: "Created By", key: "createdBy", sortable: true },
+  { label: "Storage", key: "storageType", sortable: true },
+  { label: "Data Import Version", key: "enablev3", sortable: true },
+  { label: "Actions", key: "actions", sortable: false },
 ];
 </script>
 
@@ -177,5 +283,15 @@ const columns = [
 .add-icon-btn .material-symbols-outlined {
   font-size: 32px;
 }
-</style>
 
+.dataset-name {
+  color: #1565c0;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dataset-name:hover {
+  color: #0d47a1;
+  text-decoration: underline;
+}
+</style>

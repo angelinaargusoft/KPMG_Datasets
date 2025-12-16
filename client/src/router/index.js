@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const DatasetPage = () => import("@/features/dataset/list/DatasetPage.vue");
 const AddOrEditDatasetPage = () => import("@/features/dataset/edit/AddOrEditDatasetPage.vue");
 const DatasetDetailsPage = () => import('@/features/dataset/details/DatasetDetailsPage.vue');
+const testPage = () => import("@/components/common/BaseTable.vue");
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
     name: "DatasetDetails",
     component: DatasetDetailsPage
   },
+  {
+    path: "/test",
+    name: "Test",
+    component: testPage
+  }
 ]
 
 const router = createRouter({

@@ -11,6 +11,7 @@ const state = () => ({
     sortDirection: null,
     search: "",
   },
+  blobFiles: [],
 });
 
 export default state;

@@ -1,7 +1,11 @@
 <template>
   <v-row class="py-3 px-4 align-center dataset-row" dense no-gutters>
     <v-col cols="2">
-      <span class="dataset-name" @click="goToDetails(dataset)">
+      <span
+  class="dataset-name"
+  @click.stop="goToDetails(dataset)"
+>
+
         {{ dataset.name }}
       </span>
     </v-col>

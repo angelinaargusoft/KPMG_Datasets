@@ -29,4 +29,5 @@ const layoutComponent = computed(() => {
     'GRAD' 0,
     'opsz' 24;
 }
+
 </style>

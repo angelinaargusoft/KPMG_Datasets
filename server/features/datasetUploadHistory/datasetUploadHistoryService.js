@@ -90,6 +90,8 @@ async function uploadFileForDataset(datasetUUID, file) {
     file.mimetype
   );
 
+  const filepath = uploadResult.url;
+
   await DatasetUploadHistoryRepository.logDatasetUpload({
     uuid: uuidv4(),
     datasetUUID: dataset.uuid,
@@ -99,6 +101,7 @@ async function uploadFileForDataset(datasetUUID, file) {
     md5: md5hash,
     sha256: sha256hash,
     lineCount: lineCount,
+    filepath
   });
 
   return {
@@ -109,7 +112,8 @@ async function uploadFileForDataset(datasetUUID, file) {
     blobName: uploadResult.blobName,
     md5: md5hash,
     sha256: sha256hash,
-    lineCount
+    lineCount,
+    filepath
   };
 }
 

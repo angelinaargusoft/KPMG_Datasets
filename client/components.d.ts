@@ -13,7 +13,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     ActionIconButton: typeof import('./src/components/common/ActionIconButton.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
+    BaseServerTable: typeof import('./src/components/common/BaseTable.vue')['default']
     BaseTable: typeof import('./src/components/common/BaseTable.vue')['default']
+    BaseTable2: typeof import('./src/components/common/BaseTable2.vue')['default']
+    BaseTableOld: typeof import('./src/components/common/BaseTableOld.vue')['default']
     BaseTablePagination: typeof import('./src/components/common/BaseTablePagination.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

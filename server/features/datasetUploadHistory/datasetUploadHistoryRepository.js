@@ -26,7 +26,7 @@ async function logDatasetUpload({
     md5,
     sha256,
     lineCount != null ? Number(lineCount) : null,
-    filepath
+    filepath || null
   ];
 
   await pool.execute(query, params);

@@ -43,6 +43,20 @@ export const deleteDataset = async (id) => {
   return res.data; 
 };
 
+//metadata
+export const getDatasetBlobFiles = async (uuid, continuationToken = null) => {
+  const params = {};
+
+  if (continuationToken) {
+    params.continuationToken = continuationToken;
+  }
+
+  const res = await api.get(`/datasets/uuid/${uuid}/blob-files`, { params });
+  return res.data;
+};
+
+
+
 
 
 
