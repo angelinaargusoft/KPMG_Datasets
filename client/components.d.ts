@@ -18,6 +18,7 @@ declare module 'vue' {
     BaseTable2: typeof import('./src/components/common/BaseTable2.vue')['default']
     BaseTableOld: typeof import('./src/components/common/BaseTableOld.vue')['default']
     BaseTablePagination: typeof import('./src/components/common/BaseTablePagination.vue')['default']
+    GlobalLoader: typeof import('./src/components/common/GlobalLoader.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

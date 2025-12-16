@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <GlobalLoader />
     <component :is="layoutComponent">
       <router-view />
     </component>
@@ -9,6 +10,7 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import MainLayout from "@/layouts/MainLayout.vue";
+import GlobalLoader from "./components/common/GlobalLoader.vue";
 
 const route = useRoute();
 const layoutComponent = computed(() => {
