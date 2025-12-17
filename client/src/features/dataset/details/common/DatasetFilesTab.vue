@@ -1,9 +1,8 @@
 <template>
   <div>
     <!-- UPLOAD SECTION -->
-    <div class="px-4 py-4">
       <div
-        class="dropzone"
+        class="dropzone ma-4 mb-10"
         :class="{ 'dropzone--over': isDragOver }"
         @dragover.prevent="onDragOver"
         @dragenter.prevent="onDragEnter"
@@ -11,11 +10,27 @@
         @drop.prevent="onDrop"
         @click="openFilePicker"
       >
-        <div class="dropzone-text">
-          <span class="material-symbols-outlined" style="font-size: 38px">
-            cloud_upload
+          <span class="material-symbols-outlined upload-icon">
+            upload_file
           </span>
-          <div class="text-h6">Drop files here or click to select</div>
+          <div>
+            Drop files here or
+            <a class="upload-link">Click to select file</a>
+            <!-- Info tooltip -->
+            <v-tooltip location="right">
+              <template #activator="{ props }">
+                <span
+                  v-bind="props"
+                  class="material-symbols-outlined info-icon"
+                >
+                  info
+                </span>
+              </template>
+
+              <span>
+                Supported file types: .txt, .csv, .pgp, .gpg, .xlsm, .xlsx, .xls, .xml, .zip
+              </span>
+            </v-tooltip>
         </div>
         <input
           ref="fileInput"
@@ -25,20 +40,6 @@
           @change="onFileInputChange"
         />
       </div>
-
-      <div class="d-flex justify-end mt-4">
-        <v-btn
-          color="primary"
-          :disabled="!pendingFiles.length"
-          @click="uploadAll"
-        >
-          <span class="material-symbols-outlined" style="margin-right: 6px">
-            upload
-          </span>
-          Upload Files
-        </v-btn>
-      </div>
-    </div>
 
     <!-- SUB-TABS (buttons) -->
     <div class="my-2 mx-4">
@@ -67,6 +68,7 @@
     <UploadedFilesSubTab
       v-if="activeSubTab === 'uploaded'"
       :dataset-uuid="datasetUuid"
+      :refresh-key="refreshKey"
     />
 
     <ImportStatusSubTab v-else :dataset-uuid="datasetUuid" />
@@ -88,6 +90,8 @@ const props = defineProps({
 
 const store = useStore();
 
+const refreshKey = ref(0);
+
 // upload state
 const pendingFiles = ref([]);
 const fileInput = ref(null);
@@ -96,17 +100,23 @@ const isDragOver = ref(false);
 const activeSubTab = ref("uploaded"); // default active button
 
 async function uploadAll() {
-  for (const file of pendingFiles.value) {
+  const filesToUpload = [...pendingFiles.value];
+
+  if (!filesToUpload.length) return;
+
+  pendingFiles.value = []; 
+
+  for (const file of filesToUpload) {
     try {
       await store.dispatch("datasetFileUpload/uploadFileToDataset", {
         datasetUUID: props.datasetUuid,
         file,
       });
+
       store.dispatch("toast/show", {
         message: `File: ${file.name} uploaded successfully`,
         type: "success",
       });
-      pendingFiles.value = [];
     } catch (err) {
       store.dispatch("toast/show", {
         message: `Failed to upload file: ${file.name}`,
@@ -114,7 +124,9 @@ async function uploadAll() {
       });
     }
   }
+  refreshKey.value++;
 }
+
 
 // Drag & Drop + file picker handlers
 function onDragOver(e) {
@@ -143,11 +155,16 @@ function onFileInputChange(e) {
   e.target.value = null;
 }
 
-function addFiles(files) {
-  for (const f of Array.from(files)) {
-    pendingFiles.value.push(f);
-  }
+async function addFiles(files) {
+  const newFiles = Array.from(files);
+
+  if (!newFiles.length) return;
+
+  pendingFiles.value.push(...newFiles);
+
+  await uploadAll();
 }
+
 </script>
 
 <style scoped>
@@ -156,9 +173,10 @@ function addFiles(files) {
   border: 2px dashed #2196f3;
   border-radius: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 24px;
   padding: 24px;
   cursor: pointer;
   transition: 0.2s;
@@ -174,12 +192,29 @@ function addFiles(files) {
   background-color: #e3f2fd;
 }
 
-.dropzone-text {
-  text-align: center;
-  max-width: 60%;
-}
-
 .no-uppercase {
   text-transform: none !important;
 }
+
+.upload-icon {
+  font-size: 38px;
+  color: #1976d2
+}
+
+.upload-link {
+  color: #1976d2 !important;
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.info-icon {
+  font-size: 28px;
+  vertical-align: middle;
+  padding-bottom: 4px;
+  color: #1976d2;
+  cursor: pointer;
+  font-variation-settings: 'FILL' 1;
+}
+
 </style>

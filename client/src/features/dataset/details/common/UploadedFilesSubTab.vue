@@ -17,11 +17,7 @@
     </div>
 
     <!-- TABLE (CLIENT-SIDE PAGINATION) -->
-    <BaseTable
-      :columns="columns"
-      :data="filteredItems"
-      :loading="loading"
-    >
+    <BaseTable :columns="columns" :data="filteredItems" :loading="loading">
       <template #item.name="{ item }">
         {{ item.name }}
       </template>
@@ -41,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import BaseTable from "@/components/common/BaseTable.vue";
 
@@ -50,6 +46,7 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  refreshKey: Number,
 });
 
 const store = useStore();
@@ -70,6 +67,13 @@ async function fetchFromServer() {
     });
   }
 }
+
+watch(
+  () => props.refreshKey,
+  () => {
+    fetchFromServer();
+  }
+);
 
 const filteredItems = computed(() => {
   if (!searchQuery.value) return files.value;

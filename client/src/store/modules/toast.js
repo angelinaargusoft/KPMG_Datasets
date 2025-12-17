@@ -21,7 +21,7 @@ export default {
           id: Date.now(),
           show: true,
           message: options.message,
-          type: options.type || 'info', // success | error | warning | info
+          type: options.type || 'info', // success | error 
           timeout: options.timeout || 3000
         });
       }

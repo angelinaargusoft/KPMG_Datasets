@@ -96,5 +96,24 @@
     color: #d32f2f;
   }
   
+  /* WARNING
+  .app-toast--warning .v-snackbar__wrapper {
+    background-color: #fff8e1;
+    color: #795548;
+  }
+  
+  .app-toast--warning .toast-icon {
+    color: #f9a825;
+  } */
+  
+  /* INFO
+  .app-toast--info .v-snackbar__wrapper {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+  }
+  
+  .app-toast--info .toast-icon {
+    color: #1976d2;
+  } */
   </style>
   
