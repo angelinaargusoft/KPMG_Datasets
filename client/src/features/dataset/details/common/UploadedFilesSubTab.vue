@@ -59,9 +59,16 @@ const files = computed(() => store.getters["dataset/blobFiles"] || []);
 const loading = computed(() => store.getters["dataset/loading"]);
 
 async function fetchFromServer() {
-  await store.dispatch("dataset/fetchDatasetBlobFiles", {
-    datasetUUID: props.datasetUuid,
-  });
+  try {
+    await store.dispatch("dataset/fetchDatasetBlobFiles", {
+      datasetUUID: props.datasetUuid,
+    });
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to load files",
+      type: "error",
+    });
+  }
 }
 
 const filteredItems = computed(() => {

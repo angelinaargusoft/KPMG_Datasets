@@ -124,15 +124,23 @@ async function fetchFromServer(
   newSortDirection = sortDirection.value,
   search = searchQuery.value
 ) {
-  await store.dispatch("datasetFileUpload/fetchDatasetFiles", {
-    datasetUUID: props.datasetUuid,
-    page: newPage,
-    pageSize: newPageSize,
-    sortBy: newSortKey,
-    sortDirection: newSortDirection,
-    search: search || null,
-  });
+  try {
+    await store.dispatch("datasetFileUpload/fetchDatasetFiles", {
+      datasetUUID: props.datasetUuid,
+      page: newPage,
+      pageSize: newPageSize,
+      sortBy: newSortKey,
+      sortDirection: newSortDirection,
+      search: search || null,
+    });
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to load file upload history",
+      type: "error",
+    });
+  }
 }
+
 
 async function onPageChange(newPage) {
   page.value = newPage;

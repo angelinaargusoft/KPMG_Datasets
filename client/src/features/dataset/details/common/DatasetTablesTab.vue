@@ -102,13 +102,20 @@
   
   // handlers for tables pagination
   async function handleTablesPageChange(newPage) {
-    tablesPage.value = newPage;
+  tablesPage.value = newPage;
+  try {
     await store.dispatch("datasetTables/fetchTables", {
       datasetUUID: props.datasetUuid,
       page: newPage,
       pageSize: tablesItemsPerPage.value,
     });
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to load tables",
+      type: "error",
+    });
   }
+}
   
   async function handleTablesItemsPerPageChange(newItemsPerPage) {
     tablesItemsPerPage.value = newItemsPerPage;

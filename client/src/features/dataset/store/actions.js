@@ -39,6 +39,7 @@ const actions = {
       });
     } catch (err) {
       commit("setError", err.message || "Failed to fetch datasets");
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -53,6 +54,7 @@ const actions = {
     } catch (err) {
       commit("setError", err.message);
       commit("setCurrentDataset", null);
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -68,7 +70,7 @@ const actions = {
     } catch (err) {
       commit("setError", err.message);
       commit("setCurrentDataset", null);
-      return null;
+      throw(err);
     } finally {
       commit("setLoading", false);
     }
@@ -104,7 +106,7 @@ const actions = {
       return savedDataset;
     } catch (err) {
       commit("setError", err.message);
-      return false;
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -133,7 +135,7 @@ const actions = {
       return true;
     } catch (err) {
       commit("setError", err.message);
-      return false;
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -153,7 +155,7 @@ const actions = {
       return result.data;
     } catch (err) {
       commit("setError", err.message || "Failed to fetch blob files");
-      return null;
+      throw err;
     } finally {
       commit("setLoading", false);
     }

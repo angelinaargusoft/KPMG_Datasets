@@ -49,7 +49,7 @@ const actions = {
       commit("setError", err.message || "Failed to fetch dataset files");
       commit("setFiles", []);
       commit("setPagination", null);
-      return [];
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -81,7 +81,7 @@ const actions = {
       return true;
     } catch (err) {
       commit("setError", err.message || "Failed to upload file");
-      return false;
+      throw err;
     } finally {
       commit("setLoading", false);
     }
@@ -114,7 +114,7 @@ const actions = {
       return true;
     } catch (err) {
       commit("setError", err.message || "Failed to delete file");
-      return false;
+      throw err;
     } finally {
       commit("setLoading", false);
     }

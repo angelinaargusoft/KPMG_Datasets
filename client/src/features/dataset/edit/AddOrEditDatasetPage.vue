@@ -19,11 +19,6 @@
         </v-btn>
       </div>
 
-      <!-- Error Alert -->
-      <v-alert v-if="error" type="error" dense class="mb-4">
-        {{ error }}
-      </v-alert>
-
       <!-- Dataset Form -->
       <DatasetForm
         v-model="localDataset"
@@ -94,16 +89,20 @@ onMounted(async () => {
   try {
     await store.dispatch("endpointServer/fetchEndpointServers");
   } catch (err) {
-    console.error("Error fetching endpoint servers:", err);
+    store.dispatch("toast/show", {
+      message: "Failed to load endpoint servers",
+      type: "error",
+    });
   }
 
-  const datasetUuid = route.params.id; // treated as UUID
+  const datasetUuid = route.params.id;
   if (datasetUuid) {
     try {
       const existing = await store.dispatch(
         "dataset/fetchDatasetByUUID",
         datasetUuid
       );
+
       if (existing) {
         localDataset.value = {
           name: existing.name || "",
@@ -117,10 +116,14 @@ onMounted(async () => {
         isEdit.value = true;
       }
     } catch (err) {
-      console.log("Error fetching dataset:", err);
+      store.dispatch("toast/show", {
+        message: "Failed to load dataset details",
+        type: "error",
+      });
     }
   }
 });
+
 
 // Handle form submission
 const handleSubmit = async () => {
@@ -132,14 +135,30 @@ const handleSubmit = async () => {
     createdBy: "123e4567-e89b-12d3-a456-426614174000",
   };
 
-  // passing route.params.id through as datasetId (UUID)
-  const ok = await store.dispatch("dataset/saveDataset", {
-    datasetId: route.params.id,
-    dataset: payload,
-  });
+  try {
+    const ok = await store.dispatch("dataset/saveDataset", {
+      datasetId: route.params.id,
+      dataset: payload,
+    });
 
-  if (ok) router.push("/admin/datasets");
+    if (ok) {
+      store.dispatch("toast/show", {
+        message: isEdit.value
+          ? "Dataset updated successfully"
+          : "Dataset created successfully",
+        type: "success",
+      });
+
+      router.push("/admin/datasets");
+    }
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to save dataset",
+      type: "error",
+    });
+  }
 };
+
 </script>
 
 <style scoped>

@@ -159,8 +159,18 @@ async function deleteDataset() {
   try {
     await store.dispatch("dataset/removeDataset", datasetToDelete.value.id);
 
+    store.dispatch("toast/show", {
+      message: "Dataset deleted successfully",
+      type: "success",
+    });
+
     // refresh table
     await fetchFromServer();
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to delete dataset",
+      type: "error",
+    });
   } finally {
     deleteDialog.value = false;
     datasetToDelete.value = null;
@@ -187,10 +197,16 @@ async function fetchFromServer() {
     if (pagination.value.pageSize) {
       itemsPerPage.value = pagination.value.pageSize;
     }
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to load datasets",
+      type: "error",
+    });
   } finally {
     loading.value = false;
   }
 }
+
 
 // Initial fetch
 onMounted(() => {
