@@ -31,8 +31,32 @@
         <div>{{ formatDate(item.uploadedAt).time }}</div>
       </template>
 
-      <template #item.actions> — </template>
+      <template #item.actions="{item}">
+        <ActionIconButton type="download"/>
+        <ActionIconButton type="delete" @click.stop="openDeleteDialog(item)"/>
+        <ActionIconButton type="importNew"/>
+        <ActionIconButton type="importAppend"/>  
+      </template>
     </BaseTable>
+
+    <!-- DELETE FILE CONFIRMATION DIALOG -->
+    <v-dialog v-model="deleteDialog" max-width="420">
+      <v-card>
+        <v-card-title class="text-h6 font-weight-medium">
+          Confirm Deletion
+        </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <strong>{{ selectedFile?.name }}</strong
+          >?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="error" @click="confirmDeleteFile">Delete</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -50,6 +74,9 @@ const props = defineProps({
 });
 
 const store = useStore();
+
+const deleteDialog = ref(false);
+const selectedFile = ref(null);
 
 const searchQuery = ref("");
 const files = computed(() => store.getters["dataset/blobFiles"] || []);
@@ -81,6 +108,52 @@ const filteredItems = computed(() => {
   const q = searchQuery.value.toLowerCase();
   return files.value.filter((f) => f.name?.toLowerCase().includes(q));
 });
+
+ function downloadFile(file) {
+    console.log("Download clicked for", file);
+  }
+  
+  function openDeleteDialog(file) {
+    console.log("FILE TO DELETE:", file);
+  selectedFile.value = file;
+  deleteDialog.value = true;
+}
+
+async function confirmDeleteFile() {
+  const file = selectedFile.value;
+
+  if (!file?.uuid) {
+    store.dispatch("toast/show", {
+      message: "Cannot delete file: missing identifier",
+      type: "error",
+    });
+    deleteDialog.value = false;
+    return;
+  }
+
+  try {
+    await store.dispatch("datasetFileUpload/removeDatasetFile", {
+      uploadUUID: file.uuid,
+      datasetUUID: props.datasetUuid,
+    });
+
+    store.dispatch("toast/show", {
+      message: "File deleted successfully",
+      type: "success",
+    });
+
+    deleteDialog.value = false;
+    selectedFile.value = null;
+
+    await fetchFromServer(); // refresh table
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to delete file",
+      type: "error",
+    });
+  }
+}
+
 
 function formatDate(ts) {
   if (!ts) return { date: "", time: "" };
