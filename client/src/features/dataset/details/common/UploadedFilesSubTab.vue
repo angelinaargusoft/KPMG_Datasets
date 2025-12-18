@@ -32,7 +32,7 @@
       </template>
 
       <template #item.actions="{ item }">
-        <ActionIconButton type="download" />
+        <ActionIconButton type="download" @click.stop="downloadFile(item)"/>
         <ActionIconButton type="delete" @click.stop="openDeleteDialog(item)" />
         <ActionIconButton type="importNew" />
         <ActionIconButton type="importAppend" />
@@ -109,8 +109,23 @@ const filteredItems = computed(() => {
   return files.value.filter((f) => f.name?.toLowerCase().includes(q));
 });
 
-function downloadFile(file) {
-  console.log("Download clicked for", file);
+async function downloadFile(file) {
+  try {
+    await store.dispatch("dataset/downloadDatasetBlobFiles", {
+      datasetUUID: props.datasetUuid,
+      filesName: [file.name],
+    });
+
+    store.dispatch("toast/show", {
+      message: "File downloaded successfully",
+      type: "success",
+    });
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to download file",
+      type: "error",
+    });
+  }
 }
 
 function openDeleteDialog(file) {

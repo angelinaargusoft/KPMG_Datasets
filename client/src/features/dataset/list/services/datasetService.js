@@ -60,3 +60,12 @@ export const deleteDatasetBlobFiles = async (datasetUUID, filesName) => {
     data: { filesName },
   });
 };
+
+export const downloadDatasetBlobFiles = async (datasetUUID, filesName) => {
+  const res = await api.post(
+    `/datasets/uuid/${datasetUUID}/blob-files/download`,
+    { filesName },
+    { responseType: "blob" }
+  );
+  return res.data;
+};

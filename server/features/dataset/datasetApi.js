@@ -9,7 +9,8 @@ const {
   updateDataset,
   deleteDataset,
   listDatasetBlobFiles,
-  deleteDatasetBlobFiles
+  deleteDatasetBlobFiles,
+  downloadDatasetBlobFiles
 } = require("./datasetController");
 
 const {
@@ -23,6 +24,7 @@ router.get("/", getAllDatasets);
 router.get("/uuid/:uuid", getDatasetByUUID);
 router.get("/uuid/:uuid/blob-files", listDatasetBlobFiles);
 router.delete("/uuid/:uuid/blob-files", deleteDatasetBlobFiles);
+router.post("/uuid/:uuid/blob-files/download", downloadDatasetBlobFiles);
 router.get("/:id", getDatasetById);
 router.post("/:uuid/upload", upload.single("file"), uploadDatasetFile);
 router.get("/:uuid/files", getDatasetFiles);

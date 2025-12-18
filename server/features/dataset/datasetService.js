@@ -5,9 +5,14 @@ const {
   createContainerIfNotExists,
   deleteContainer,
   listBlobMetadataInContainer, 
-  deleteBlobFromContainer
+  deleteBlobFromContainer,
+  downloadBlobFromContainer
 } = require("./blobStorageService");
 
+const archiver = require("archiver");
+const { PassThrough } = require("stream");
+
+const { BlobServiceClient } = require("@azure/storage-blob");
 const { SecretClient } = require("@azure/keyvault-secrets");
 const { ClientSecretCredential } = require("@azure/identity");
 
@@ -259,6 +264,57 @@ async function deleteDatasetBlobFiles({ datasetUUID, filesName }) {
   return true;
 }
 
+async function downloadDatasetBlobFiles({ datasetUUID, filesName }) {
+  const { connectionString, containerName } =
+    await resolveDatasetBlobContext(datasetUUID);
+
+  // 🔹 SINGLE FILE
+  if (filesName.length === 1) {
+    const blobName = filesName[0];
+
+    const { stream, contentType } =
+      await downloadBlobFromContainer({
+        connectionString,
+        containerName,
+        blobName,
+      });
+
+    return {
+      stream,
+      fileName: blobName.substring(blobName.lastIndexOf("/") + 1),
+      contentType,
+    };
+  }
+
+  // MULTIPLE FILES - ZIP
+  const zipStream = new PassThrough();
+  const archive = archiver("zip", { zlib: { level: 9 } });
+
+  archive.pipe(zipStream);
+
+  for (const blobName of filesName) {
+    const { stream } =
+      await downloadBlobFromContainer({
+        connectionString,
+        containerName,
+        blobName,
+      });
+
+    archive.append(stream, {
+      name: blobName.substring(blobName.lastIndexOf("/") + 1),
+    });
+  }
+
+  archive.finalize();
+
+  return {
+    stream: zipStream,
+    fileName: "dataset_files.zip",
+    contentType: "application/zip",
+  };
+}
+
+
 module.exports = {
   createDataset,
   getAllDatasets,
@@ -269,5 +325,6 @@ module.exports = {
   deleteDataset,
   buildBlobConnectionStringFromEndpoint,
   listDatasetBlobFiles,
-  deleteDatasetBlobFiles
+  deleteDatasetBlobFiles,
+  downloadDatasetBlobFiles
 };

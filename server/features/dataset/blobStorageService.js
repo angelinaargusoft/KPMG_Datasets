@@ -95,10 +95,36 @@ async function deleteBlobFromContainer({
   return response.succeeded;
 }
 
+async function downloadBlobFromContainer({
+  connectionString,
+  containerName,
+  blobName,
+}) {
+  const blobServiceClient =
+    BlobServiceClient.fromConnectionString(connectionString);
+
+  const containerClient =
+    blobServiceClient.getContainerClient(containerName);
+
+  const blobClient =
+    containerClient.getBlobClient(blobName);
+
+  const downloadResponse = await blobClient.download();
+
+  return {
+    stream: downloadResponse.readableStreamBody,
+    contentType:
+      downloadResponse.contentType || "application/octet-stream",
+    contentLength: downloadResponse.contentLength,
+  };
+}
+
+
 module.exports = {
   createContainerIfNotExists,
   uploadBufferToContainer,
   deleteContainer,
   deleteBlobFromContainer,
   listBlobMetadataInContainer,
+  downloadBlobFromContainer
 };

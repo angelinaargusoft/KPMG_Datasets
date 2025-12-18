@@ -6,7 +6,8 @@ import {
   updateDataset,
   deleteDataset,
   getDatasetBlobFiles,
-  deleteDatasetBlobFiles
+  deleteDatasetBlobFiles,
+  downloadDatasetBlobFiles
 } from "../list/services/datasetService";
 
 const actions = {
@@ -178,8 +179,40 @@ const actions = {
     } finally {
       commit("setLoading", false);
     }
+  },
+  
+  async downloadDatasetBlobFiles(
+    context,
+    { datasetUUID, filesName }
+  ) {
+    try {
+      const result = await downloadDatasetBlobFiles(
+        datasetUUID,
+        filesName
+      );
+  
+      const fileName =
+        filesName.length === 1
+          ? filesName[0].substring(filesName[0].lastIndexOf("/") + 1)
+          : "dataset_files.zip";
+  
+      const url = window.URL.createObjectURL(new Blob([result]));
+      const link = document.createElement("a");
+  
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+  
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      throw err;
+    } 
   }  
 };
+
+
 
 export default actions;
 

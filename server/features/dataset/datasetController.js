@@ -106,7 +106,34 @@ async function deleteDatasetBlobFiles(req, res, next) {
   }
 }
 
+async function downloadDatasetBlobFiles(req, res, next) {
+  try {
+    const { uuid } = req.params;
+    const { filesName } = req.body;
 
+    if (!Array.isArray(filesName) || filesName.length === 0) {
+      return res.status(400).json({
+        message: "filesName must be a non-empty array",
+      });
+    }
+
+    const { stream, fileName, contentType } =
+      await DatasetService.downloadDatasetBlobFiles({
+        datasetUUID: uuid,
+        filesName,
+      });
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fileName}"`
+    );
+    res.setHeader("Content-Type", contentType);
+
+    stream.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+}
 
 module.exports = {
   createDataset,
@@ -116,5 +143,6 @@ module.exports = {
   updateDataset,
   deleteDataset,
   listDatasetBlobFiles,
-  deleteDatasetBlobFiles
+  deleteDatasetBlobFiles,
+  downloadDatasetBlobFiles
 };
