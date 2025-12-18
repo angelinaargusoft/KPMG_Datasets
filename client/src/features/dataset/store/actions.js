@@ -5,7 +5,8 @@ import {
   createDataset,
   updateDataset,
   deleteDataset,
-  getDatasetBlobFiles
+  getDatasetBlobFiles,
+  deleteDatasetBlobFiles
 } from "../list/services/datasetService";
 
 const actions = {
@@ -160,6 +161,24 @@ const actions = {
       commit("setLoading", false);
     }
   },
+
+  async removeDatasetBlobFiles(
+    { commit },
+    { datasetUUID, filesName }
+  ) {
+    commit("setLoading", true);
+    commit("setError", null);
+  
+    try {
+      await deleteDatasetBlobFiles(datasetUUID, filesName);
+      return true;
+    } catch (err) {
+      commit("setError", err.message || "Failed to delete file(s)");
+      throw err;
+    } finally {
+      commit("setLoading", false);
+    }
+  }  
 };
 
 export default actions;

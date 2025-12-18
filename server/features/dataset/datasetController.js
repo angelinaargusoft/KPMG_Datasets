@@ -81,6 +81,32 @@ async function listDatasetBlobFiles(req, res, next) {
   }
 }
 
+async function deleteDatasetBlobFiles(req, res, next) {
+  try {
+    const { uuid } = req.params;
+    const { filesName } = req.body;
+
+    if (!Array.isArray(filesName) || filesName.length === 0) {
+      return res.status(400).json({
+        message: "filesName must be a non-empty array",
+      });
+    }
+
+    await DatasetService.deleteDatasetBlobFiles({
+      datasetUUID: uuid,
+      filesName,
+    });
+
+    res.json({
+      message: "File(s) deleted successfully",
+      deleted: filesName,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 
 module.exports = {
   createDataset,
@@ -89,5 +115,6 @@ module.exports = {
   getDatasetByUUID,
   updateDataset,
   deleteDataset,
-  listDatasetBlobFiles
+  listDatasetBlobFiles,
+  deleteDatasetBlobFiles
 };

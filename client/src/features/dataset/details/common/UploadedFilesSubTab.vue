@@ -31,11 +31,11 @@
         <div>{{ formatDate(item.uploadedAt).time }}</div>
       </template>
 
-      <template #item.actions="{item}">
-        <ActionIconButton type="download"/>
-        <ActionIconButton type="delete" @click.stop="openDeleteDialog(item)"/>
-        <ActionIconButton type="importNew"/>
-        <ActionIconButton type="importAppend"/>  
+      <template #item.actions="{ item }">
+        <ActionIconButton type="download" />
+        <ActionIconButton type="delete" @click.stop="openDeleteDialog(item)" />
+        <ActionIconButton type="importNew" />
+        <ActionIconButton type="importAppend" />
       </template>
     </BaseTable>
 
@@ -109,12 +109,11 @@ const filteredItems = computed(() => {
   return files.value.filter((f) => f.name?.toLowerCase().includes(q));
 });
 
- function downloadFile(file) {
-    console.log("Download clicked for", file);
-  }
-  
-  function openDeleteDialog(file) {
-    console.log("FILE TO DELETE:", file);
+function downloadFile(file) {
+  console.log("Download clicked for", file);
+}
+
+function openDeleteDialog(file) {
   selectedFile.value = file;
   deleteDialog.value = true;
 }
@@ -122,19 +121,10 @@ const filteredItems = computed(() => {
 async function confirmDeleteFile() {
   const file = selectedFile.value;
 
-  if (!file?.uuid) {
-    store.dispatch("toast/show", {
-      message: "Cannot delete file: missing identifier",
-      type: "error",
-    });
-    deleteDialog.value = false;
-    return;
-  }
-
   try {
-    await store.dispatch("datasetFileUpload/removeDatasetFile", {
-      uploadUUID: file.uuid,
+    await store.dispatch("dataset/removeDatasetBlobFiles", {
       datasetUUID: props.datasetUuid,
+      filesName: [file.name],
     });
 
     store.dispatch("toast/show", {
@@ -153,7 +143,6 @@ async function confirmDeleteFile() {
     });
   }
 }
-
 
 function formatDate(ts) {
   if (!ts) return { date: "", time: "" };

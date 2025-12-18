@@ -1,4 +1,4 @@
-import api from "@/plugins/axios"; 
+import api from "@/plugins/axios";
 
 export const createDataset = async (data) => {
   const res = await api.post(`/datasets`, data);
@@ -20,7 +20,7 @@ export const getAllDatasets = async (
   if (search) params.search = search;
 
   const res = await api.get(`/datasets`, { params });
-  return res.data; 
+  return res.data;
 };
 
 export const getDatasetById = async (id) => {
@@ -40,7 +40,7 @@ export const updateDataset = async (id, data) => {
 
 export const deleteDataset = async (id) => {
   const res = await api.delete(`/datasets/${id}`);
-  return res.data; 
+  return res.data;
 };
 
 //metadata
@@ -55,13 +55,8 @@ export const getDatasetBlobFiles = async (uuid, continuationToken = null) => {
   return res.data;
 };
 
-
-
-
-
-
-
-
-
-
-
+export const deleteDatasetBlobFiles = async (datasetUUID, filesName) => {
+  return api.delete(`/datasets/uuid/${datasetUUID}/blob-files`, {
+    data: { filesName },
+  });
+};

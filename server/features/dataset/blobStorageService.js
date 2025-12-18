@@ -82,11 +82,11 @@ async function deleteContainer(connectionString, containerName) {
   return { deleted: true };
 }
 
-async function deleteBlobFromContainer(
+async function deleteBlobFromContainer({
   connectionString,
   containerName,
   blobName
-) {
+}) {
   const blobService = BlobServiceClient.fromConnectionString(connectionString);
   const containerClient = blobService.getContainerClient(containerName);
   const blobClient = containerClient.getBlockBlobClient(blobName);

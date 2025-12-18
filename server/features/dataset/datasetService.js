@@ -4,7 +4,8 @@ const EndpointServerService = require("../endpointServer/endpointServerService")
 const {
   createContainerIfNotExists,
   deleteContainer,
-  listBlobMetadataInContainer
+  listBlobMetadataInContainer, 
+  deleteBlobFromContainer
 } = require("./blobStorageService");
 
 const { SecretClient } = require("@azure/keyvault-secrets");
@@ -243,6 +244,21 @@ async function listDatasetBlobFiles({ datasetUUID }) {
   });
 }
 
+async function deleteDatasetBlobFiles({ datasetUUID, filesName }) {
+  const { connectionString, containerName } =
+    await resolveDatasetBlobContext(datasetUUID);
+
+  for (const fileName of filesName) {
+    await deleteBlobFromContainer({
+      connectionString,
+      containerName,
+      blobName: fileName,
+    });
+  }
+
+  return true;
+}
+
 module.exports = {
   createDataset,
   getAllDatasets,
@@ -253,4 +269,5 @@ module.exports = {
   deleteDataset,
   buildBlobConnectionStringFromEndpoint,
   listDatasetBlobFiles,
+  deleteDatasetBlobFiles
 };
