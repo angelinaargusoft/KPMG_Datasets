@@ -42,10 +42,9 @@ export default {
       }
     },
 
-    // 🔑 THIS IS WHAT PREVENTS OVERLAP
     topOffsets() {
-      const BASE_TOP = 64     // distance from top of screen
-      const TOAST_HEIGHT = 72  // adjust if your toasts are taller
+      const BASE_TOP = 64     
+      const TOAST_HEIGHT = 72 
 
       return this.toasts.map(
         (_, index) => BASE_TOP + index * TOAST_HEIGHT

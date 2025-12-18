@@ -1,4 +1,5 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
+const { validateUpload } = require("./uploadValidator");
 
 async function listBlobMetadataInContainer({
   connectionString,
@@ -48,6 +49,8 @@ async function uploadBufferToContainer(
   blobName,
   mimeType
 ) {
+  validateUpload(buffer, blobName, mimeType);
+  
   const containerClient = await createContainerIfNotExists(
     connectionString,
     containerName
