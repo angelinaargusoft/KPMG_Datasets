@@ -1,6 +1,6 @@
 const pool = require("../../config/database");
 
-async function insertDummyImportRecord({ datasetUUID, userId, params }) {
+async function insertDummyImportRecord({ uuid, datasetUUID, userId, params }) {
   const query = `
     INSERT INTO InputHistory
     (
@@ -24,7 +24,7 @@ async function insertDummyImportRecord({ datasetUUID, userId, params }) {
     "ImportPending",       
     null,                  
     JSON.stringify(params), 
-    null, 
+    uuid, 
     datasetUUID,           
     null   
   ];

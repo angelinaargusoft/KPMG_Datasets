@@ -1,0 +1,105 @@
+
+[2025-12-22T06:34:24.870Z] Import worker started
+[2025-12-22T06:34:25.945Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:34:25.948Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:34:25.948Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:35:45.413Z] Import worker started
+[2025-12-22T06:35:46.681Z] Starting import for undefined
+[2025-12-22T06:35:46.683Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:35:46.685Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:23.443Z] Import worker started
+[2025-12-22T06:36:25.307Z] Starting import for undefined
+[2025-12-22T06:36:25.315Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:25.319Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:34.223Z] Import worker started
+[2025-12-22T06:36:36.873Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:36:36.875Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:36.876Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:47.842Z] Import worker started
+[2025-12-22T06:36:49.884Z] Worker crashed: consolelog is not defined
+[2025-12-22T06:36:56.129Z] Import worker started
+[2025-12-22T06:36:57.402Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:36:57.404Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:36:57.407Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:37:12.899Z] Import worker started
+[2025-12-22T06:37:14.152Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:37:14.154Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:37:14.155Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:38:55.568Z] Import worker started
+[2025-12-22T06:39:01.959Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:39:01.961Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:39:01.961Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:39:34.843Z] Import worker started
+[2025-12-22T06:39:35.990Z] Starting import for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab
+[2025-12-22T06:39:35.992Z] ERROR for 1c1d93ca-ba09-490a-b39c-6b9b13a2e2ab: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:39:35.992Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:44:07.906Z] Import worker started
+[2025-12-22T06:44:09.347Z] Starting import for undefined
+[2025-12-22T06:44:09.351Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:44:09.355Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:55:55.042Z] Import worker started
+[2025-12-22T06:55:59.837Z] Worker crashed: {"odata.error":{"code":"TableNotFound","message":{"lang":"en-US","value":"The table specified does not exist.\nRequestId:8e308078-2002-0070-4410-73306b000000\nTime:2025-12-22T06:55:59.7185914Z"}}}
+[2025-12-22T06:56:00.259Z] Import worker started
+[2025-12-22T06:56:07.113Z] Worker crashed: {"odata.error":{"code":"TableNotFound","message":{"lang":"en-US","value":"The table specified does not exist.\nRequestId:3f5b6725-2002-0012-3f10-73f24c000000\nTime:2025-12-22T06:56:06.9841239Z"}}}
+[2025-12-22T06:57:03.500Z] Import worker started
+[2025-12-22T06:57:04.577Z] Worker crashed: {"odata.error":{"code":"TableNotFound","message":{"lang":"en-US","value":"The table specified does not exist.\nRequestId:9a3ae002-4002-0059-1b10-730e1f000000\nTime:2025-12-22T06:57:04.4575463Z"}}}
+[2025-12-22T06:57:46.974Z] Import worker started
+[2025-12-22T06:57:48.189Z] No TODO imports found
+[2025-12-22T06:57:53.438Z] No TODO imports found
+[2025-12-22T06:57:58.682Z] No TODO imports found
+[2025-12-22T06:58:03.967Z] Starting import for undefined
+[2025-12-22T06:58:03.969Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:58:03.970Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:58:43.607Z] Import worker started
+[2025-12-22T06:58:45.105Z] Starting import for undefined
+[2025-12-22T06:58:45.106Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:58:45.107Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:59:29.863Z] Import worker started
+[2025-12-22T06:59:31.932Z] Starting import for undefined
+[2025-12-22T06:59:31.934Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T06:59:31.935Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:00:00.751Z] Import worker started
+[2025-12-22T07:00:01.978Z] Starting import for undefined
+[2025-12-22T07:00:01.980Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:00:01.981Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:04:22.893Z] Import worker started
+[2025-12-22T07:11:32.516Z] Import worker started
+[2025-12-22T07:11:33.949Z] Starting import for undefined
+[2025-12-22T07:11:33.951Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:11:33.952Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:12:27.102Z] Import worker started
+[2025-12-22T07:12:33.377Z] Starting import for undefined
+[2025-12-22T07:12:33.379Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:12:33.379Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:14:54.938Z] Import worker started
+[2025-12-22T07:14:56.183Z] Starting import for undefined
+[2025-12-22T07:14:56.187Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:14:56.187Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:00.040Z] Import worker started
+[2025-12-22T07:15:01.313Z] Starting import for undefined
+[2025-12-22T07:15:01.316Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:01.316Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:12.237Z] Import worker started
+[2025-12-22T07:15:13.464Z] Starting import for undefined
+[2025-12-22T07:15:13.465Z] ERROR for undefined: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:13.466Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:22.753Z] Import worker started
+[2025-12-22T07:15:23.989Z] Starting import for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6
+[2025-12-22T07:15:23.992Z] ERROR for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:23.993Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:30.818Z] Import worker started
+[2025-12-22T07:15:32.068Z] Starting import for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6
+[2025-12-22T07:15:32.071Z] ERROR for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:15:32.074Z] Worker crashed: The entity's partitionKey cannot be undefined or null.
+[2025-12-22T07:16:10.211Z] Import worker started
+[2025-12-22T07:16:11.404Z] Starting import for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6
+[2025-12-22T07:16:14.688Z] Completed import for a7818bcd-d1e4-4c41-83e9-d4a2ff1932c6
+[2025-12-22T07:16:20.203Z] No TODO imports found
+[2025-12-22T07:16:25.509Z] No TODO imports found
+[2025-12-22T07:16:31.448Z] No TODO imports found
+[2025-12-22T08:13:35.331Z] Import worker started
+[2025-12-22T08:14:23.780Z] Starting import for d456aac5-0838-4ca7-81b6-e90c4e9dff85
+[2025-12-22T08:14:27.130Z] Completed import for d456aac5-0838-4ca7-81b6-e90c4e9dff85
+[2025-12-22T08:34:59.413Z] Import worker started
+[2025-12-22T08:39:59.761Z] Starting import for 37ea0e0e-b45d-4005-adad-f0fd6ad5c048
+[2025-12-22T08:40:03.052Z] Completed import for 37ea0e0e-b45d-4005-adad-f0fd6ad5c048

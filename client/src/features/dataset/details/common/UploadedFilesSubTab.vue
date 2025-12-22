@@ -34,7 +34,7 @@
       <template #item.actions="{ item }">
         <ActionIconButton type="download" @click.stop="downloadFile(item)"/>
         <ActionIconButton type="delete" @click.stop="openDeleteDialog(item)" />
-        <ActionIconButton type="importNew" />
+        <ActionIconButton type="importNew" @click.stop="importNew(item)"/>
         <ActionIconButton type="importAppend" />
       </template>
     </BaseTable>
@@ -158,6 +158,27 @@ async function confirmDeleteFile() {
     });
   }
 }
+
+async function importNew(file) {
+  try {
+    await store.dispatch("inputHistory/triggerImportFromBlobFiles", {
+      datasetUUID: props.datasetUuid,
+      filesName: [file.name],
+      append: false,
+    });
+
+    store.dispatch("toast/show", {
+      message: "Import started successfully",
+      type: "success",
+    });
+  } catch (err) {
+    store.dispatch("toast/show", {
+      message: "Failed to start import",
+      type: "error",
+    });
+  }
+}
+
 
 function formatDate(ts) {
   if (!ts) return { date: "", time: "" };

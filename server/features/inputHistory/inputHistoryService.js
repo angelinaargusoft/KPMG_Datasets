@@ -1,6 +1,8 @@
+const { v4: uuidv4 } = require("uuid");
+
 const InputHistoryRepository = require("./inputHistoryRepository");
 const DatasetService = require("../dataset/datasetService");
-const DatasetUploadHistoryRepository = require("../datasetUploadHistory/datasetUploadHistoryRepository");
+const { createImportControlEntry } = require("../../services/importControlService");
 
 function formatSize(bytes) {
   if (!bytes && bytes !== 0) return "";
@@ -9,32 +11,61 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function createImportRecord(datasetUUID, uploadUUID, userId) {
+async function createImportRecordsFromBlobFiles({
+  datasetUUID,
+  filesName,
+  append = false,
+  userId,
+}) {
   const dataset = await DatasetService.getDatasetByUUID(datasetUUID);
   if (!dataset) throw new Error("Dataset not found");
 
-  const upload = await DatasetUploadHistoryRepository.getUploadByUUID(uploadUUID);
-  if (!upload) throw new Error("Upload not found");
-
-  const filename = upload.name;
-  const fileSizeBytes = upload.size ?? null;
-
-  const params = {
-    table: filename,
-    size: formatSize(fileSizeBytes),
-    path: filename,                   
-    datasetUUID: datasetUUID,
-    prefix: dataset.tablePrefix || "", 
-    type: dataset.storageType || "Blob",
-    inPreProcessed: true
-  };
-
-  return await InputHistoryRepository.insertDummyImportRecord({
+  // Fetch blob metadata once
+  const blobFiles = await DatasetService.listDatasetBlobFiles({
     datasetUUID,
-    userId,
-    params
   });
+
+  // Create a quick lookup map
+  const blobMap = new Map(
+    blobFiles.map((f) => [f.name, f])
+  );
+
+  const records = [];
+
+  for (const fileName of filesName) {
+    const blob = blobMap.get(fileName);
+
+    if (!blob) {
+      throw new Error(`Blob file not found: ${fileName}`);
+    }
+
+    const params = {
+      table: fileName,
+      size: formatSize(blob.size),
+      path: fileName,
+      datasetUUID,
+      prefix: dataset.tablePrefix || "",
+      type: dataset.storageType || "Blob",
+      append,
+      inPreProcessed: true,
+    };
+
+    const uuid = uuidv4();
+
+    const record = await InputHistoryRepository.insertDummyImportRecord({
+      uuid,
+      datasetUUID,
+      userId,
+      params,
+    });
+
+    await createImportControlEntry(record.UUID);
+    records.push(record);
+  }
+
+  return records;
 }
+
 
 async function getAllImportRecords() {
   return await InputHistoryRepository.getAllImportRecords();
@@ -45,7 +76,7 @@ async function getImportRecordsByDataset(datasetUUID) {
 }
 
 module.exports = {
-  createImportRecord,
+  createImportRecordsFromBlobFiles,
   getAllImportRecords,
   getImportRecordsByDataset
 };
